@@ -24,7 +24,7 @@
 | --- | --- | --- |
 | `db/schema.sql` | 16 张表的结构、索引与约束（`CREATE TABLE IF NOT EXISTS`，可重复执行） | 所有环境 |
 | `db/data.sql` | 角色、权限、角色权限关系、演示账号、故障分类、系统配置 | 本地开发与测试环境 |
-| `db/demo-data.sql` | 业务演示数据（客户、设备、工单、评价） | 随 Stage 3~5 补充 |
+| `db/demo-data.sql` | 业务演示数据：4 个客户、8 台设备，并绑定客户演示账号的 `customer_id` | 本地开发与测试环境（工单与评价演示数据随 Stage 4~5 补充） |
 
 > 生产环境只执行 `schema.sql`；`data.sql` 中的演示账号仅用于本地开发，生产不得保留。
 
@@ -120,7 +120,7 @@
 | --- | --- | --- |
 | 角色 | 4 | `ROLE_ADMIN`、`ROLE_SERVICE`、`ROLE_ENGINEER`、`ROLE_CUSTOMER` |
 | 权限 | 30 | 覆盖用户/角色/配置/日志/客户/设备/工单/评价/附件/统计 |
-| 角色权限关系 | 63 | 按最小权限原则分配 |
+| 角色权限关系 | 64 | 按最小权限原则分配（客户角色额外拥有 `customer:view`，配合数据域只能看到自己的档案） |
 | 演示账号 | 6 | 见下表 |
 | 故障分类 | 8 | 硬件、软件、网络、电池、屏幕、传感器、固件、其他 |
 | 系统配置 | 8 | 工单确认时限、重开窗口、SLA、附件限制、登录锁定策略 |
@@ -138,7 +138,17 @@
 | `customer01` | 客户联系人一 | `ROLE_CUSTOMER` | 查看本人工单、确认与评价 |
 | `customer02` | 客户联系人二 | `ROLE_CUSTOMER` | 同上（用于验证数据隔离） |
 
-> `customer01` / `customer02` 的 `customer_id` 绑定在 Stage 3 的客户演示数据中完成。
+> `customer01` / `customer02` 的 `customer_id` 已由 `db/demo-data.sql` 绑定到客户 1 与客户 2，用于验证数据隔离。
+
+### 6.2 业务演示数据（demo-data.sql）
+
+| 数据 | 数量 | 说明 |
+| --- | --- | --- |
+| 客户 | 4 | `CUS-0001`（A 级，重点客户）、`CUS-0002`（B 级）、`CUS-0003`（A 级，多仓库）、`CUS-0004`（C 级，新客户） |
+| 设备 | 8 | 覆盖智能终端、检测设备、网络设备、手持终端、监测设备，含 1 台报废设备与 1 台保修即将到期设备 |
+| 账号绑定 | 2 | `customer01` → 客户 1，`customer02` → 客户 2 |
+
+`demo-data.sql` 可重复执行（`INSERT ... ON DUPLICATE KEY UPDATE` + 绑定 `UPDATE`），实测重复执行后数据量保持不变。
 
 ## 7. 初始化步骤
 
@@ -153,6 +163,10 @@ mysql -u root -p serviceflow_test < backend/src/main/resources/db/schema.sql
 # 3. 执行基础数据脚本（两个库都执行）
 mysql -u root -p serviceflow < backend/src/main/resources/db/data.sql
 mysql -u root -p serviceflow_test < backend/src/main/resources/db/data.sql
+
+# 4. 执行业务演示数据脚本（仅本地开发/测试环境）
+mysql -u root -p serviceflow < backend/src/main/resources/db/demo-data.sql
+mysql -u root -p serviceflow_test < backend/src/main/resources/db/demo-data.sql
 ```
 
-两个脚本均可重复执行：结构脚本使用 `CREATE TABLE IF NOT EXISTS`，数据脚本使用 `INSERT ... ON DUPLICATE KEY UPDATE`（不会重复插入，也不会删除业务数据）。
+三个脚本均可重复执行：结构脚本使用 `CREATE TABLE IF NOT EXISTS`，数据脚本使用 `INSERT ... ON DUPLICATE KEY UPDATE`（不会重复插入，也不会删除业务数据）。

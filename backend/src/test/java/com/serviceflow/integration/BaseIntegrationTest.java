@@ -63,6 +63,12 @@ public abstract class BaseIntegrationTest {
         jdbcTemplate.update("DELETE FROM fault_category WHERE category_code LIKE 'IT-%'");
         jdbcTemplate.update("DELETE FROM device WHERE device_code LIKE 'IT-%'");
         jdbcTemplate.update("DELETE FROM customer WHERE customer_code LIKE 'IT-%'");
+        // 清理集成测试产生的当日工单（演示工单使用 SO20260101 前缀，不受影响）
+        String todayTicketPredicate =
+                "ticket_id IN (SELECT id FROM service_ticket WHERE ticket_no LIKE CONCAT('SO', DATE_FORMAT(NOW(), '%Y%m%d'), '%'))";
+        jdbcTemplate.update("DELETE FROM ticket_process_record WHERE " + todayTicketPredicate);
+        jdbcTemplate.update("DELETE FROM ticket_assignment WHERE " + todayTicketPredicate);
+        jdbcTemplate.update("DELETE FROM service_ticket WHERE ticket_no LIKE CONCAT('SO', DATE_FORMAT(NOW(), '%Y%m%d'), '%')");
     }
 
     /**

@@ -9,10 +9,12 @@ ServiceFlow（Work Order Management System）是一个面向销售设备、智�
 | 层次 | 技术 |
 | --- | --- |
 | 后端 | Java 17、Spring Boot 3.3.5、Spring MVC、MyBatis-Plus 3.5.7、MySQL 8、Redis、Springdoc OpenAPI、JUnit 5 |
-| 前端 | Vue 3、TypeScript、Vite 5、Element Plus、Vue Router、Pinia、Axios、ECharts、Vitest |
+| 前端 | Vue 3、JavaScript（ES2022，不使用 TypeScript）、Vite 5、Element Plus、Vue Router、Pinia、Axios、ECharts、Vitest |
 | 构建与规范 | Maven（Wrapper）、npm、ESLint、Prettier |
 
 架构与详细设计见 [docs/TECHNICAL_DESIGN.md](docs/TECHNICAL_DESIGN.md)。
+
+> 前端语言说明：本项目前端统一使用 **JavaScript（ES2022）**，不引入 TypeScript。因此前端没有 `npm run type-check` 脚本，代码质量门禁为 `npm run lint` + `npm run test` + `npm run build`；编辑器的路径别名（`@/*`）提示由 `frontend/jsconfig.json` 提供，接口字段含义以 JSDoc 注释记录。
 
 ## 环境要求
 
@@ -81,7 +83,6 @@ cd backend
 
 # 前端：类型检查、规范检查、单元测试、构建
 cd frontend
-npm run type-check
 npm run lint
 npm run test
 npm run build
@@ -92,7 +93,7 @@ npm run build
 ```
 .
 ├── backend/         Spring Boot 后端工程
-├── frontend/        Vue 3 + TypeScript 前端工程
+├── frontend/        Vue 3 + JavaScript 前端工程
 ├── docs/            开发计划、技术设计、Git 工作流、环境检查报告
 ├── .env.example     环境变量示例（仅占位值）
 └── README.md

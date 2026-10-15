@@ -23,7 +23,10 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+
+import java.util.List;
 
 /**
  * 用户管理接口（仅管理员）。
@@ -52,6 +55,15 @@ public class UserController {
     @GetMapping("/{id}")
     public Result<UserVO> detail(@PathVariable Long id) {
         return Result.success(userService.detail(id));
+    }
+
+    @Operation(summary = "可指派工程师列表",
+            description = "供工单分派/转派下拉使用，需要分派或转派权限即可访问，不暴露其他用户字段")
+    @PreAuthorize("hasAnyAuthority('ticket:assign', 'ticket:transfer')")
+    @GetMapping("/engineers")
+    public Result<List<UserVO>> engineers(
+            @RequestParam(required = false, defaultValue = "ROLE_ENGINEER") String roleCode) {
+        return Result.success(userService.optionsByRole(roleCode));
     }
 
     @Operation(summary = "新增用户")

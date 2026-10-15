@@ -47,6 +47,12 @@ public class TicketVO {
     @Schema(description = "转派次数")
     private Integer transferCount;
 
+    @Schema(description = "服务评价分数（未评价时为 null）")
+    private Integer evaluationScore;
+
+    @Schema(description = "满意度（未评价时为 null）")
+    private String evaluationSatisfaction;
+
     @Schema(description = "是否已逾期（未结束且超过截止时间）")
     private Boolean overdue;
 

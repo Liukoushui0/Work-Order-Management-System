@@ -146,6 +146,7 @@ docs(readme): document local deployment
 | --- | --- | --- |
 | Stage 0 | `docs/technical-design` | `docs(project): add development plan, technical design and git workflow` |
 | Stage 1 | `feature/project-skeleton` | `build(backend): add spring boot project skeleton`、`build(frontend): add vite vue3 typescript skeleton`、`feat(common): add unified response and exception handling`、`chore(project): add gitignore and env examples` |
+| Stage 1 后置修复 | `fix/frontend-javascript` | `fix(web): migrate frontend from typescript to javascript`（按用户要求调整前端语言，作为独立修复分支提交并合并） |
 | Stage 2 | `feature/auth-rbac` | `feat(db): add schema and demo data scripts`、`feat(auth): implement jwt authentication`、`feat(rbac): implement role and permission control`、`test(auth): add authentication and authorization tests` |
 | Stage 3 | `feature/customer-device` | `feat(customer): implement customer management`、`feat(device): implement device archive management`、`test(customer): add customer and device isolation tests` |
 | Stage 4 | `feature/ticket-core` | `feat(ticket): implement work order creation and query`、`feat(ticket): implement assignment and acceptance workflow`、`feat(ticket): add process history and state machine`、`test(ticket): add state transition and concurrency tests` |

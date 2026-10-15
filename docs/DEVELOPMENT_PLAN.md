@@ -30,7 +30,7 @@
 
 后端：Java 17、Spring Boot 3.3.x、Maven、Spring MVC、Spring Security、JWT、MyBatis-Plus、MySQL 8、Redis、Springdoc OpenAPI、Hibernate Validator、JUnit 5、Mockito。
 
-前端：Vue 3、TypeScript、Vite、Element Plus、Vue Router、Pinia、Axios、ECharts、Vitest、Vue Test Utils、ESLint、Prettier。
+前端：Vue 3、JavaScript（ES2022，不使用 TypeScript）、Vite、Element Plus、Vue Router、Pinia、Axios、ECharts、Vitest、Vue Test Utils、ESLint、Prettier。
 
 工具：Git、GitHub、Gitee、IntelliJ IDEA、VS Code。
 
@@ -125,12 +125,12 @@
 
 **前端交付物**
 
-- `frontend/`（Vite + Vue 3 + TypeScript 工程）
+- `frontend/`（Vite + Vue 3 + JavaScript 工程）
 - 目录：`api` / `assets` / `components` / `layouts` / `router` / `stores` / `styles` / `types` / `utils` / `views`
 - Axios 封装（统一 baseURL、请求/响应拦截、错误提示、token 注入）
 - Pinia 初始化、Vue Router 骨架、Element Plus 引入
 - ESLint（flat config）+ Prettier + `.editorconfig`
-- `package.json` 脚本：`dev` / `build` / `type-check` / `lint` / `format` / `test`
+- `package.json` 脚本：`dev` / `build` / `lint` / `format` / `test`
 
 **工程配置交付物**
 
@@ -142,13 +142,13 @@
 
 - `mvn -q clean compile` 与 `mvn -q clean test` 通过（无测试时以编译与骨架测试为准）。
 - `mvn package` 产出可执行 jar，应用能以 `dev` profile 启动并响应健康检查接口。
-- `npm ci`、`npm run type-check`、`npm run lint`、`npm run test`、`npm run build` 全部通过。
+- `npm install`、`npm run lint`、`npm run test`、`npm run build` 全部通过（本项目不使用 TypeScript，因此没有类型检查步骤）。
 - 前后端能同时启动，前端能成功调用后端健康检查/基础接口。
 - 确认没有构建产物或本地配置进入暂存区。
 
 **风险依赖**：需要 JDK 17（Stage 0 已确认为环境缺口）。
 
-**提交拆分建议**：`build(backend): add spring boot project skeleton`、`build(frontend): add vite vue3 typescript skeleton`、`feat(common): add unified response and exception handling`、`chore(project): add gitignore and env examples`。
+**提交拆分建议**：`build(backend): add spring boot project skeleton`、`build(frontend): add vite vue3 javascript skeleton`、`feat(common): add unified response and exception handling`、`chore(project): add gitignore and env examples`。
 
 ---
 
@@ -308,7 +308,7 @@
 - 工单列表支持分页、状态筛选、优先级筛选与关键词查询。
 - 工单详情展示处理流程、操作历史与关联设备。
 - ECharts 使用后端真实统计数据，无硬编码假数字。
-- `npm run type-check`、`npm run lint`、`npm run test`、`npm run build` 全部通过。
+- `npm run lint`、`npm run test`、`npm run build` 全部通过。
 
 **提交拆分建议**：`feat(web): implement ticket management pages`、`feat(web): implement dashboard charts`、`feat(web): add user role and log pages`、`style(web): unify layout and form feedback`、`test(web): add component and router guard tests`。
 
@@ -321,7 +321,7 @@
 **交付物**
 
 - 完整后端测试执行结果（单元 + 集成）
-- 完整前端检查结果（type-check / lint / test / build）
+- 完整前端检查结果（lint / test / build）
 - 安全审查记录与修复提交
 - 打包产物验证（可执行 jar + 前端 dist）
 
@@ -374,7 +374,7 @@
 | 范围 | 工具 | 命令 |
 | --- | --- | --- |
 | 组件渲染与交互 | Vitest + Vue Test Utils | `npm run test` |
-| 类型检查 | vue-tsc | `npm run type-check` |
+| 语言与质量 | JavaScript + ESLint（不使用 TypeScript，无类型检查步骤） | `npm run lint` |
 | 规范检查 | ESLint + Prettier | `npm run lint` |
 | 构建验证 | Vite | `npm run build` |
 
@@ -432,7 +432,7 @@
 | 阶段 | 名称 | 状态 | 验收结果 |
 | --- | --- | --- | --- |
 | Stage 0 | 环境检查、开发计划与技术设计 | 已完成（2026-10-15） | 通过：四份文档已产出；三个环境阻塞项（JDK 17 / MySQL 凭据 / Redis）经用户确认后处理完毕；首次提交 `38772a3` 已推送至 `github` 与 `gitee`，三处 `main` 指向同一提交 |
-| Stage 1 | 工程骨架与基础设施 | 已完成 | 通过：后端 9 个测试与前端 10 个测试全部通过；`mvn package`、`npm run type-check/lint/test/build` 均通过；前后端联调实测成功（Vite 代理 → 后端 → MySQL/Redis 全 UP）。过程中修复 2 个真实缺陷：Logback 1.5 不再支持 `SizeAndTimeBasedFNATP`、Element Plus 2.8.8 `el-tag` 挂载钩子空指针，详见 TECHNICAL_DESIGN.md 第 2.3.1 节 |
+| Stage 1 | 工程骨架与基础设施 | 已完成 | 通过：后端 9 个测试与前端 10 个测试全部通过；`mvn package`、`npm run lint/test/build` 均通过；前后端联调实测成功（Vite 代理 → 后端 → MySQL/Redis 全 UP）。过程中修复 2 个真实缺陷：Logback 1.5 不再支持 `SizeAndTimeBasedFNATP`、Element Plus 2.8.8 `el-tag` 挂载钩子空指针；并按用户要求将前端由 TypeScript 迁移为 JavaScript（移除 `npm run type-check`）。详见 TECHNICAL_DESIGN.md 第 2.3.1 节 |
 | Stage 2 | 数据库、认证与权限 | 未开始 | — |
 | Stage 3 | 客户与设备档案管理 | 未开始 | — |
 | Stage 4 | 工单核心业务 | 未开始 | — |

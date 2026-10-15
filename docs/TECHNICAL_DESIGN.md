@@ -71,7 +71,6 @@ ServiceFlow 是一个面向企业售后团队的工单管理系统，采用**模
 | --- | --- |
 | Node.js | 24.x（本机 v24.21.0） |
 | Vue | 3.5.x |
-| TypeScript | 5.6.x |
 | Vite | 5.4.x + `@vitejs/plugin-vue` 5.1.x |
 | Element Plus | 2.11.9 |
 | Vue Router | 4.4.x |
@@ -79,15 +78,19 @@ ServiceFlow 是一个面向企业售后团队的工单管理系统，采用**模
 | Axios | 1.7.x |
 | ECharts | 5.5.x |
 | 测试 | Vitest 2.1.x + Vue Test Utils 2.4.x + jsdom |
-| 质量 | vue-tsc 2.1.x、ESLint 9（flat config）+ eslint-plugin-vue、Prettier 3.3.x |
+| 语言 | JavaScript（ES2022 模块 + `<script setup>`，不使用 TypeScript） |
+| 质量 | ESLint 9（flat config）+ eslint-plugin-vue、Prettier 3.3.x，JSDoc 注释 |
 
 > 兼容性说明：本机 Node.js 为 24.x，高于 Vite 5 官方主要验证版本区间。Stage 1 会在真实构建中验证该组合；若出现不兼容（例如原生依赖或构建失败），将分析原因并记录后升级至 Vite 6 + Vitest 3，且同步更新本文档。
+
+> 语言调整说明：按用户要求，前端**不使用 TypeScript**，统一采用 JavaScript。因此前端不提供类型检查步骤，`tsconfig*.json` 由 `jsconfig.json` 取代（仅用于编辑器路径别名与提示，`checkJs` 关闭）。前端质量门禁为 ESLint（`npm run lint`）、Vitest（`npm run test`）与构建（`npm run build`）。
 
 ### 2.3.1 版本调整记录
 
 | 调整项 | 原计划 | 实际采用 | 原因与证据 |
 | --- | --- | --- | --- |
-| Element Plus | 2.8.8 | **2.11.9** | 2.8.8 的 `el-tag` 在 vnode 挂载钩子中直接执行 `vnode.component.subTree.component.bum = null`，未做空值判断。当 `el-tag` 渲染在 `el-descriptions` 的插槽渲染函数中时（本项目的仪表盘状态标签），`subTree.component` 为 null，抛出 `TypeError: Cannot set properties of null (setting 'bum')`，并导致该组件树实例被破坏。2.11.9 的同一钩子已改为逐级可选链判空，缺陷消失。该结论由前端单元测试 `DashboardView.spec.ts` 在升级前后真实运行验证（升级前 2 个用例失败，升级后 10/10 通过）。 |
+| 前端语言 | TypeScript 5.6 + vue-tsc 类型检查 | **JavaScript（ES2022）** | 用户明确要求不使用 TypeScript。已移除 `typescript`、`vue-tsc`、`typescript-eslint`、`@types/node` 依赖与全部 `tsconfig*.json`，`npm run type-check` 脚本一并移除（执行该命令返回 `Missing script: "type-check"`，不会被描述为已通过）。类型约束改由 JSDoc 注释与 ESLint 承担，接口结构以 `@typedef` 记录在各模块内。 |
+| Element Plus | 2.8.8 | **2.11.9** | 2.8.8 的 `el-tag` 在 vnode 挂载钩子中直接执行 `vnode.component.subTree.component.bum = null`，未做空值判断。当 `el-tag` 渲染在 `el-descriptions` 的插槽渲染函数中时（本项目的仪表盘状态标签），`subTree.component` 为 null，抛出 `TypeError: Cannot set properties of null (setting 'bum')`，并导致该组件树实例被破坏。2.11.9 的同一钩子已改为逐级可选链判空，缺陷消失。该结论由前端单元测试 `DashboardView.spec.js` 在升级前后真实运行验证（升级前 2 个用例失败，升级后 10/10 通过）。 |
 | Vite / Vitest | Vite 5.4.11 + Vitest 2.1.8 | 与计划一致 | Node.js 24.21.0 下 `npm run build`、`npm run test` 均通过，无需升级。 |
 | Logback 配置 | `TimeBasedRollingPolicy` + `SizeAndTimeBasedFNATP` | `SizeAndTimeBasedRollingPolicy` | Spring Boot 3.3 使用 Logback 1.5，`SizeAndTimeBasedFNATP` 已被移除，原配置导致上下文启动失败；改用新策略后启动正常。 |
 
@@ -131,7 +134,7 @@ Work Order Management System/
 │       │   └── logback-spring.xml
 │       └── test/java/com/serviceflow/...   # 单元测试与集成测试
 ├── frontend/
-│   ├── package.json、vite.config.ts、tsconfig*.json、eslint.config.js
+│   ├── package.json、vite.config.js、jsconfig.json、eslint.config.js
 │   └── src/
 │       ├── api/        # 按模块拆分的接口封装
 │       ├── assets/     # 静态资源
@@ -141,7 +144,7 @@ Work Order Management System/
 │       ├── router/     # 路由与守卫
 │       ├── stores/     # Pinia（auth、app、dict）
 │       ├── styles/     # 全局样式与主题变量
-│       ├── types/      # TS 类型（与 VO 对应）
+│       ├── types/      # 共享的 JSDoc 类型定义（如需）
 │       ├── utils/      # request 封装、格式化、校验
 │       └── views/      # 页面
 ├── docs/

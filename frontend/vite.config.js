@@ -23,7 +23,7 @@ export default defineConfig({
   test: {
     environment: 'jsdom',
     globals: true,
-    include: ['src/**/*.spec.ts'],
+    include: ['src/**/*.spec.js'],
     clearMocks: true
   }
 })

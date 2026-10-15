@@ -1,26 +1,18 @@
 import js from '@eslint/js'
 import pluginVue from 'eslint-plugin-vue'
 import globals from 'globals'
-import tseslint from 'typescript-eslint'
 
-export default tseslint.config(
+export default [
   {
-    ignores: ['dist/**', 'node_modules/**', 'coverage/**']
+    ignores: ['dist/**', 'node_modules/**', 'coverage/**', '.npm-cache/**']
   },
   js.configs.recommended,
-  ...tseslint.configs.recommended,
   ...pluginVue.configs['flat/essential'],
   {
-    files: ['**/*.vue'],
+    files: ['src/**/*.{js,vue}', 'vite.config.js'],
     languageOptions: {
-      parserOptions: {
-        parser: tseslint.parser
-      }
-    }
-  },
-  {
-    files: ['src/**/*.{ts,vue}'],
-    languageOptions: {
+      ecmaVersion: 2022,
+      sourceType: 'module',
       globals: {
         ...globals.browser
       }
@@ -28,5 +20,19 @@ export default tseslint.config(
     rules: {
       'vue/multi-word-component-names': 'off'
     }
+  },
+  {
+    files: ['src/**/*.spec.js', 'vite.config.js', 'eslint.config.js'],
+    languageOptions: {
+      globals: {
+        ...globals.node,
+        describe: 'readonly',
+        it: 'readonly',
+        expect: 'readonly',
+        vi: 'readonly',
+        beforeEach: 'readonly',
+        afterEach: 'readonly'
+      }
+    }
   }
-)
+]

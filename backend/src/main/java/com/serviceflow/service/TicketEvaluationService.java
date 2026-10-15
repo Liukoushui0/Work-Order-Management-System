@@ -39,15 +39,18 @@ public class TicketEvaluationService {
     private final TicketService ticketService;
     private final AccessGuard accessGuard;
     private final DataScopeService dataScopeService;
+    private final StatisticsCacheService statisticsCacheService;
 
     public TicketEvaluationService(TicketEvaluationMapper evaluationMapper,
                                    TicketService ticketService,
                                    AccessGuard accessGuard,
-                                   DataScopeService dataScopeService) {
+                                   DataScopeService dataScopeService,
+                                   StatisticsCacheService statisticsCacheService) {
         this.evaluationMapper = evaluationMapper;
         this.ticketService = ticketService;
         this.accessGuard = accessGuard;
         this.dataScopeService = dataScopeService;
+        this.statisticsCacheService = statisticsCacheService;
     }
 
     /**
@@ -96,6 +99,7 @@ public class TicketEvaluationService {
         }
         ticketService.appendRecord(ticketId, TicketAction.EVALUATE, ticket.getStatus(), ticket.getStatus(),
                 "客户提交服务评价：" + evaluation.getSatisfaction() + "（" + evaluation.getScore() + " 分）");
+        statisticsCacheService.evictStatisticsAfterCommit();
         return EvaluationVO.from(evaluation, true);
     }
 

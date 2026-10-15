@@ -102,6 +102,7 @@ public class TicketService {
     private final TicketEvaluationMapper evaluationMapper;
     private final TicketAttachmentMapper attachmentMapper;
     private final TicketCommentMapper commentMapper;
+    private final StatisticsCacheService statisticsCacheService;
 
     public TicketService(ServiceTicketMapper ticketMapper,
                          TicketAssignmentMapper assignmentMapper,
@@ -118,7 +119,8 @@ public class TicketService {
                          TicketNoGenerator ticketNoGenerator,
                          TicketEvaluationMapper evaluationMapper,
                          TicketAttachmentMapper attachmentMapper,
-                         TicketCommentMapper commentMapper) {
+                         TicketCommentMapper commentMapper,
+                         StatisticsCacheService statisticsCacheService) {
         this.ticketMapper = ticketMapper;
         this.assignmentMapper = assignmentMapper;
         this.recordMapper = recordMapper;
@@ -135,6 +137,7 @@ public class TicketService {
         this.evaluationMapper = evaluationMapper;
         this.attachmentMapper = attachmentMapper;
         this.commentMapper = commentMapper;
+        this.statisticsCacheService = statisticsCacheService;
     }
 
     // --------------------------------------------------------------- 查询
@@ -345,6 +348,7 @@ public class TicketService {
 
         addRecord(ticket, TicketAction.CREATE, null, TicketStatus.PENDING_ASSIGN.name(),
                 "工单创建成功，等待分派", null);
+        statisticsCacheService.evictStatisticsAfterCommit();
         return toVOList(List.of(requireTicket(ticket.getId()))).get(0);
     }
 
@@ -395,6 +399,7 @@ public class TicketService {
                 StringUtils.hasText(request.getRemark())
                         ? "分派给 " + engineer.getRealName() + "：" + request.getRemark()
                         : "分派给 " + engineer.getRealName(), null);
+        statisticsCacheService.evictStatisticsAfterCommit();
         return toVOList(List.of(requireTicket(id))).get(0);
     }
 
@@ -442,6 +447,7 @@ public class TicketService {
         } finally {
             redisLockService.unlock(lockKey);
         }
+        statisticsCacheService.evictStatisticsAfterCommit();
         return toVOList(List.of(requireTicket(id))).get(0);
     }
 
@@ -478,6 +484,7 @@ public class TicketService {
         insertAssignment(id, previousAssignee, engineer.getId(), "TRANSFER", request.getReason());
         addRecord(ticket, TicketAction.TRANSFER, fromStatus, TicketStatus.PENDING_ACCEPT.name(),
                 "转派给 " + engineer.getRealName() + "：" + request.getReason(), null);
+        statisticsCacheService.evictStatisticsAfterCommit();
         return toVOList(List.of(requireTicket(id))).get(0);
     }
 
@@ -500,6 +507,7 @@ public class TicketService {
         closeActiveAssignment(id, "REJECT_TO_POOL");
         addRecord(ticket, TicketAction.REJECT, fromStatus, TicketStatus.PENDING_ASSIGN.name(),
                 "退回待重新分派：" + request.getReason(), null);
+        statisticsCacheService.evictStatisticsAfterCommit();
         return toVOList(List.of(requireTicket(id))).get(0);
     }
 
@@ -550,6 +558,7 @@ public class TicketService {
                 .set(ServiceTicket::getUpdateBy, SecurityUtils.currentUserId()));
         addRecord(ticket, TicketAction.COMPLETE, fromStatus, TicketStatus.PENDING_CONFIRM.name(),
                 request.getResult(), request.getUsedHours());
+        statisticsCacheService.evictStatisticsAfterCommit();
         return toVOList(List.of(requireTicket(id))).get(0);
     }
 
@@ -572,6 +581,7 @@ public class TicketService {
                 .set(ServiceTicket::getUpdateBy, SecurityUtils.currentUserId()));
         addRecord(ticket, TicketAction.CONFIRM, fromStatus, TicketStatus.COMPLETED.name(),
                 StringUtils.hasText(request.getRemark()) ? request.getRemark() : "客户确认服务结果", null);
+        statisticsCacheService.evictStatisticsAfterCommit();
         return toVOList(List.of(requireTicket(id))).get(0);
     }
 
@@ -618,6 +628,7 @@ public class TicketService {
             closeActiveAssignment(id, null);
         }
         addRecord(ticket, TicketAction.REOPEN, fromStatus, target.name(), content, null);
+        statisticsCacheService.evictStatisticsAfterCommit();
         return toVOList(List.of(requireTicket(id))).get(0);
     }
 
@@ -642,6 +653,7 @@ public class TicketService {
         closeActiveAssignment(id, null);
         addRecord(ticket, TicketAction.CANCEL, fromStatus, TicketStatus.CANCELLED.name(),
                 "取消工单：" + request.getReason(), null);
+        statisticsCacheService.evictStatisticsAfterCommit();
         return toVOList(List.of(requireTicket(id))).get(0);
     }
 

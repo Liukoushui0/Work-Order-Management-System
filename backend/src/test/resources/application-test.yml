@@ -18,6 +18,10 @@ logging:
     com.serviceflow: info
 
 app:
+  schedule:
+    # 测试中不启动定时任务，改为直接调用服务方法验证
+    auto-confirm-cron: "-"
+    overdue-reminder-cron: "-"
   jwt:
     issuer: serviceflow-test
     # 仅用于自动化测试，生产环境必须通过 JWT_SECRET 环境变量注入真实密钥

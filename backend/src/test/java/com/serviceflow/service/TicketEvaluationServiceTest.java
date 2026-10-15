@@ -37,6 +37,7 @@ class TicketEvaluationServiceTest {
 
     @Mock private TicketEvaluationMapper evaluationMapper;
     @Mock private TicketService ticketService;
+    @Mock private StatisticsCacheService statisticsCacheService;
 
     private TicketEvaluationService evaluationService;
 
@@ -48,7 +49,7 @@ class TicketEvaluationServiceTest {
     @BeforeEach
     void setUp() {
         evaluationService = new TicketEvaluationService(evaluationMapper, ticketService,
-                new AccessGuard(), new DataScopeService());
+                new AccessGuard(), new DataScopeService(), statisticsCacheService);
         loginAsCustomer(1L);
     }
 

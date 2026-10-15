@@ -92,8 +92,8 @@ export async function get(url, params) {
  * @param {unknown} [body]
  * @returns {Promise<any>}
  */
-export async function post(url, body) {
-  const response = await http.post(url, body)
+export async function post(url, body, config) {
+  const response = await http.post(url, body, config)
   return response.data.data
 }
 
@@ -116,6 +116,19 @@ export async function put(url, body) {
 export async function del(url) {
   const response = await http.delete(url)
   return response.data.data
+}
+
+/**
+ * 下载二进制文件（附件）。响应是文件流，不走统一响应结构。
+ * @param {string} url
+ * @returns {Promise<{blob: Blob, fileName: string}>}
+ */
+export async function download(url) {
+  const response = await http.get(url, { responseType: 'blob' })
+  const disposition = response.headers['content-disposition'] || ''
+  const match = /filename\*=UTF-8''([^;]+)/i.exec(disposition)
+  const fileName = match ? decodeURIComponent(match[1]) : 'download'
+  return { blob: response.data, fileName }
 }
 
 export default http

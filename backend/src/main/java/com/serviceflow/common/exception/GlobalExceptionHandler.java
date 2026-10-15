@@ -8,6 +8,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.validation.BindException;
 import org.springframework.validation.FieldError;
 import org.springframework.web.HttpRequestMethodNotSupportedException;
@@ -113,6 +115,27 @@ public class GlobalExceptionHandler {
                                                               HttpServletRequest request) {
         log.warn("资源不存在 uri={}", request.getRequestURI());
         return buildResponse(ErrorCode.NOT_FOUND, ErrorCode.NOT_FOUND.getMessage());
+    }
+
+    /**
+     * 方法级鉴权失败（@PreAuthorize 拒绝）：返回 403，而不是被兜底处理成 500。
+     */
+    @ExceptionHandler(AccessDeniedException.class)
+    public ResponseEntity<Result<Void>> handleAccessDenied(AccessDeniedException ex,
+                                                           HttpServletRequest request) {
+        log.warn("越权访问被拒绝 uri={} method={} user={}", request.getRequestURI(), request.getMethod(),
+                ex.getMessage());
+        return buildResponse(ErrorCode.ACCESS_DENIED, ErrorCode.ACCESS_DENIED.getMessage());
+    }
+
+    /**
+     * 认证失败兜底：返回 401 统一结构。
+     */
+    @ExceptionHandler(AuthenticationException.class)
+    public ResponseEntity<Result<Void>> handleAuthentication(AuthenticationException ex,
+                                                             HttpServletRequest request) {
+        log.warn("认证失败 uri={} message={}", request.getRequestURI(), ex.getMessage());
+        return buildResponse(ErrorCode.TOKEN_INVALID, ErrorCode.TOKEN_INVALID.getMessage());
     }
 
     /**

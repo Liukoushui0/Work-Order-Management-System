@@ -40,6 +40,12 @@ mybatis-plus:
       id-type: auto
 
 app:
+  jwt:
+    issuer: serviceflow
+    # 生产环境必须通过环境变量 JWT_SECRET 注入；留空时启动会生成一次性随机密钥
+    secret: ${JWT_SECRET:}
+    access-token-minutes: 120
+    refresh-token-days: 7
   cors:
     allowed-origins: ${APP_CORS_ALLOWED_ORIGINS:http://localhost:5173}
   upload:

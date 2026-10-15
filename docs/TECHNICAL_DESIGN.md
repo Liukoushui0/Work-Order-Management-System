@@ -364,7 +364,7 @@ PENDING_ASSIGN --分派--> PENDING_ACCEPT --接单--> PROCESSING --提交处理-
 - **幂等与重复执行防护**：接单、分派、确认、评价等关键操作均使用状态前置校验 + 条件更新；重复提交返回明确业务错误，不产生重复记录。
 - **并发接单**：两名工程师同时接同一工单，只有一个成功，另一个收到 1403（已被他人接单）。
 - **越权**：工程师不能处理非本人负责的工单（1405）；客户不能操作非本人工单（1102）。
-- **自动确认**：由 Spring 定时任务扫描超期的 `PENDING_CONFIRM` 工单并转为 `COMPLETED`，记录操作人为系统；是否启用由系统配置控制。
+- **自动确认**：由 `TicketScheduledService` 定时任务扫描超期的 `PENDING_CONFIRM` 工单并转为 `COMPLETED`，写入 `AUTO_CONFIRM` 处理记录（操作人记为 SYSTEM）；是否启用与超时时长由 `ticket.auto_confirm_enabled`、`ticket.confirm_timeout_hours` 控制；并发下通过"状态 + 版本号"条件更新保证不重复确认。逾期提醒任务每小时扫描逾期工单并输出结构化告警日志。
 - **逾期判定**：`status NOT IN (COMPLETED, CANCELLED) AND deadline_time < NOW()`，通过 `idx_deadline_status` 高效查询。
 
 ---
@@ -490,11 +490,12 @@ PENDING_ASSIGN --分派--> PENDING_ACCEPT --接单--> PROCESSING --提交处理-
 
 | 键 | 类型 | TTL | 用途 | 失效时机 |
 | --- | --- | --- | --- | --- |
-| `sf:dev:dashboard:overview` | String(JSON) | 60s | 仪表盘总览指标 | 工单创建/状态变更/评价提交后删除 |
-| `sf:dev:stats:trend:{range}` | String(JSON) | 300s | 工单趋势统计 | 工单创建/状态变更后按模式删除 |
-| `sf:dev:stats:fault-distribution` | String(JSON) | 300s | 故障类型分布 | 工单创建/更新故障分类后删除 |
-| `sf:dev:stats:engineer-workload` | String(JSON) | 300s | 工程师工作量 | 接单/完成/转派后删除 |
-| `sf:dev:stats:satisfaction` | String(JSON) | 600s | 满意度统计 | 评价提交后删除 |
+| `sf:{env}:dashboard:overview:{scope}` | String(JSON) | 60s | 仪表盘总览指标 | 工单创建/状态流转/评价提交/自动确认后按模式删除 |
+| `sf:{env}:stats:trend:{scope}:{granularity}` | String(JSON) | 300s | 工单趋势统计 | 同上 |
+| `sf:{env}:stats:fault-distribution:{scope}` | String(JSON) | 300s | 故障类型分布 | 同上 |
+| `sf:{env}:stats:priority-distribution:{scope}` | String(JSON) | 300s | 优先级分布 | 同上 |
+| `sf:{env}:stats:engineer-workload:{scope}` | String(JSON) | 300s | 工程师工作量 | 同上 |
+| `sf:{env}:stats:satisfaction:{scope}` | String(JSON) | 600s | 满意度统计 | 同上 |
 | `sf:dev:config:all` | String(JSON) | 1800s | 系统配置字典 | 配置更新后删除 |
 | `sf:dev:token:blacklist:{jti}` | String | 令牌剩余有效期 | 注销令牌 | 到期自动清除 |
 | `sf:dev:lock:ticket:accept:{ticketId}` | String(SET NX EX) | 10s | 并发接单锁 | 接单完成后释放 |
@@ -503,8 +504,9 @@ PENDING_ASSIGN --分派--> PENDING_ACCEPT --接单--> PROCESSING --提交处理-
 
 - **不缓存**：用户凭据、密码哈希、私钥、令牌明文（黑名单仅存 `jti`）、附件二进制内容。
 - **不过度缓存**：只缓存高频读取且计算代价高的统计结果与系统配置，不做全量查询缓存。
-- **失效策略**：写操作提交成功后主动精确删除对应键（不在事务提交前删除），TTL 作为兜底。
-- **降级策略**：所有缓存读写包裹异常处理，Redis 不可用时记录 WARN 日志并直接查库；分布式锁不可用时依赖数据库条件更新保证正确性，功能不中断。
+- **数据范围隔离**：统计缓存键带 `{scope}`，`all` 表示全局、`u{userId}` 表示仅该用户（工程师个人统计），避免把个人统计当作全局结果返回给其他人。
+- **失效策略**：写操作在**事务提交之后**通过 `TransactionSynchronization#afterCommit` 精确清理（提交前清理会被并发读请求用旧数据回填），TTL 作为兜底；键空间很小，清理使用 `KEYS` 前缀匹配，生产环境可替换为 `SCAN` 或维护键索引集合。
+- **降级策略**：所有缓存读写包裹异常处理，Redis 不可用时记录 WARN 日志并直接查库；分布式锁不可用时依赖数据库条件更新保证正确性，功能不中断（`StatisticsCacheServiceTest`、`TokenBlacklistServiceTest` 已覆盖该路径）。
 
 ---
 

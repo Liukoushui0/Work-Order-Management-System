@@ -73,7 +73,7 @@ ServiceFlow 是一个面向企业售后团队的工单管理系统，采用**模
 | Vue | 3.5.x |
 | TypeScript | 5.6.x |
 | Vite | 5.4.x + `@vitejs/plugin-vue` 5.1.x |
-| Element Plus | 2.8.x |
+| Element Plus | 2.11.9 |
 | Vue Router | 4.4.x |
 | Pinia | 2.2.x |
 | Axios | 1.7.x |
@@ -82,6 +82,14 @@ ServiceFlow 是一个面向企业售后团队的工单管理系统，采用**模
 | 质量 | vue-tsc 2.1.x、ESLint 9（flat config）+ eslint-plugin-vue、Prettier 3.3.x |
 
 > 兼容性说明：本机 Node.js 为 24.x，高于 Vite 5 官方主要验证版本区间。Stage 1 会在真实构建中验证该组合；若出现不兼容（例如原生依赖或构建失败），将分析原因并记录后升级至 Vite 6 + Vitest 3，且同步更新本文档。
+
+### 2.3.1 版本调整记录
+
+| 调整项 | 原计划 | 实际采用 | 原因与证据 |
+| --- | --- | --- | --- |
+| Element Plus | 2.8.8 | **2.11.9** | 2.8.8 的 `el-tag` 在 vnode 挂载钩子中直接执行 `vnode.component.subTree.component.bum = null`，未做空值判断。当 `el-tag` 渲染在 `el-descriptions` 的插槽渲染函数中时（本项目的仪表盘状态标签），`subTree.component` 为 null，抛出 `TypeError: Cannot set properties of null (setting 'bum')`，并导致该组件树实例被破坏。2.11.9 的同一钩子已改为逐级可选链判空，缺陷消失。该结论由前端单元测试 `DashboardView.spec.ts` 在升级前后真实运行验证（升级前 2 个用例失败，升级后 10/10 通过）。 |
+| Vite / Vitest | Vite 5.4.11 + Vitest 2.1.8 | 与计划一致 | Node.js 24.21.0 下 `npm run build`、`npm run test` 均通过，无需升级。 |
+| Logback 配置 | `TimeBasedRollingPolicy` + `SizeAndTimeBasedFNATP` | `SizeAndTimeBasedRollingPolicy` | Spring Boot 3.3 使用 Logback 1.5，`SizeAndTimeBasedFNATP` 已被移除，原配置导致上下文启动失败；改用新策略后启动正常。 |
 
 ### 2.4 外部服务
 

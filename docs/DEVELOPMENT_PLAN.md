@@ -432,7 +432,7 @@
 | 阶段 | 名称 | 状态 | 验收结果 |
 | --- | --- | --- | --- |
 | Stage 0 | 环境检查、开发计划与技术设计 | 已完成（2026-10-15） | 通过：四份文档已产出；三个环境阻塞项（JDK 17 / MySQL 凭据 / Redis）经用户确认后处理完毕；首次提交 `38772a3` 已推送至 `github` 与 `gitee`，三处 `main` 指向同一提交 |
-| Stage 1 | 工程骨架与基础设施 | 未开始 | — |
+| Stage 1 | 工程骨架与基础设施 | 已完成 | 通过：后端 9 个测试与前端 10 个测试全部通过；`mvn package`、`npm run type-check/lint/test/build` 均通过；前后端联调实测成功（Vite 代理 → 后端 → MySQL/Redis 全 UP）。过程中修复 2 个真实缺陷：Logback 1.5 不再支持 `SizeAndTimeBasedFNATP`、Element Plus 2.8.8 `el-tag` 挂载钩子空指针，详见 TECHNICAL_DESIGN.md 第 2.3.1 节 |
 | Stage 2 | 数据库、认证与权限 | 未开始 | — |
 | Stage 3 | 客户与设备档案管理 | 未开始 | — |
 | Stage 4 | 工单核心业务 | 未开始 | — |

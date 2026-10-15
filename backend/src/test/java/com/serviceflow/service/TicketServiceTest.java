@@ -65,6 +65,9 @@ class TicketServiceTest {
     @Mock private FaultCategoryMapper faultCategoryMapper;
     @Mock private ConfigService configService;
     @Mock private RedisLockService redisLockService;
+    @Mock private com.serviceflow.mapper.TicketEvaluationMapper evaluationMapper;
+    @Mock private com.serviceflow.mapper.TicketAttachmentMapper attachmentMapper;
+    @Mock private com.serviceflow.mapper.TicketCommentMapper commentMapper;
 
     private TicketService ticketService;
 
@@ -79,7 +82,8 @@ class TicketServiceTest {
     void setUp() {
         ticketService = new TicketService(ticketMapper, assignmentMapper, recordMapper, customerMapper,
                 deviceMapper, sysUserMapper, sysRoleMapper, faultCategoryMapper, new DataScopeService(),
-                new AccessGuard(), configService, redisLockService, new TicketNoGenerator());
+                new AccessGuard(), configService, redisLockService, new TicketNoGenerator(),
+                evaluationMapper, attachmentMapper, commentMapper);
         loginAs(3L, "engineer01", AccessGuard.ROLE_ENGINEER, Set.of("ticket:view", "ticket:accept",
                 "ticket:process", "ticket:complete", "ticket:transfer"));
     }

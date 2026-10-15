@@ -2,7 +2,7 @@
 
 ServiceFlow（Work Order Management System）是一个面向销售设备、智能硬件或软件产品企业售后团队的工单管理系统，覆盖客户报修、客服建单、工单派发、维修处理、服务评价与运营分析。
 
-> 当前进度：**Stage 2（数据库、认证与权限）已完成** —— 已落地 16 张业务表、四角色 RBAC、JWT 认证与操作审计，并通过 40 个单元测试与 23 个集成测试。完整功能按 `docs/DEVELOPMENT_PLAN.md` 的阶段划分推进，README 随阶段持续补充。
+> 当前进度：**Stage 3（客户与设备档案管理）已完成** —— 已落地 16 张业务表、四角色 RBAC、JWT 认证、操作审计、客户资料与设备档案模块，并通过 54 个单元测试与 34 个集成测试。完整功能按 `docs/DEVELOPMENT_PLAN.md` 的阶段划分推进，README 随阶段持续补充。
 
 ## 技术栈
 
@@ -43,6 +43,9 @@ Set-Location "D:\Tools\Redis\Redis-x64-5.0.14.1"
 redis-cli ping   # 期望输出 PONG
 ```
 
+> 也可以把日志写入 Redis 自己的目录，避免日志文件占用项目目录：
+> `.\redis-server.exe redis.windows.conf --dir "D:\Tools\Redis\Redis-x64-5.0.14.1" --logfile "D:\Tools\Redis\Redis-x64-5.0.14.1\redis-server.log"`
+
 > 排错提示：如果 `redis-cli` 返回 `MISCONF Redis is configured to save RDB snapshots, but it is currently not able to persist on disk`，
 > 说明该实例的快照写入失败，此时**所有写命令（含缓存与令牌黑名单）都会被拒绝**，而连接与 `PING` 仍然正常，容易被误判为"Redis 正常"。
 > 处理方式：以安装目录为工作目录并用 `--dir` 指向可写目录重启 Redis，然后执行 `redis-cli bgsave` 确认 `rdb_last_bgsave_status:ok`。
@@ -60,7 +63,7 @@ cd backend
 .\mvnw.cmd spring-boot:run
 ```
 
-> 首次启动前请按 [docs/DATABASE_DESIGN.md](docs/DATABASE_DESIGN.md) 第 7 节执行 `db/schema.sql` 与 `db/data.sql`。
+> 首次启动前请按 [docs/DATABASE_DESIGN.md](docs/DATABASE_DESIGN.md) 第 7 节依次执行 `db/schema.sql`、`db/data.sql` 与 `db/demo-data.sql`（演示数据仅用于本地开发）。
 
 后端默认端口 `8080`，启动后：
 

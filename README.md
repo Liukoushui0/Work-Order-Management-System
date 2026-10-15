@@ -36,15 +36,30 @@ mysql -u root -p -e "CREATE DATABASE IF NOT EXISTS serviceflow DEFAULT CHARACTER
 
 ### 2. 启动 Redis
 
+推荐注册为 Windows 服务常驻运行（开机自启，无需每次手动启动）：
+
 ```powershell
-# 必须显式指定 --dir（Redis 的数据目录），否则 RDB 持久化可能失败
-Set-Location "D:\Tools\Redis\Redis-x64-5.0.14.1"
-.\redis-server.exe redis.windows.conf --dir "D:\Tools\Redis\Redis-x64-5.0.14.1"
+cd "D:\Tools\Redis\Redis-x64-5.0.14.1"
+.\redis-server.exe --service-install redis.windows.conf --loglevel verbose   # 仅首次安装
+.\redis-server.exe --service-start
 redis-cli ping   # 期望输出 PONG
 ```
 
-> 也可以把日志写入 Redis 自己的目录，避免日志文件占用项目目录：
-> `.\redis-server.exe redis.windows.conf --dir "D:\Tools\Redis\Redis-x64-5.0.14.1" --logfile "D:\Tools\Redis\Redis-x64-5.0.14.1\redis-server.log"`
+也可以前台手动启动，此时务必显式指定 `--dir` 与 `--logfile`（否则 RDB 可能写失败，日志也可能占用项目目录）：
+
+```powershell
+Set-Location "D:\Tools\Redis\Redis-x64-5.0.14.1"
+.\redis-server.exe redis.windows.conf --dir "D:\Tools\Redis\Redis-x64-5.0.14.1" --logfile "D:\Tools\Redis\Redis-x64-5.0.14.1\redis-server.log"
+redis-cli ping   # 期望输出 PONG
+```
+
+启动后建议确认持久化与数据目录正常：
+
+```powershell
+redis-cli config get dir    # 期望输出 Redis 安装目录
+redis-cli bgsave
+redis-cli info persistence | Select-String rdb_last_bgsave_status   # 期望 ok
+```
 
 > 排错提示：如果 `redis-cli` 返回 `MISCONF Redis is configured to save RDB snapshots, but it is currently not able to persist on disk`，
 > 说明该实例的快照写入失败，此时**所有写命令（含缓存与令牌黑名单）都会被拒绝**，而连接与 `PING` 仍然正常，容易被误判为"Redis 正常"。

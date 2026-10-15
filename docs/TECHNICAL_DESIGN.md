@@ -581,7 +581,7 @@ PENDING_ASSIGN --分派--> PENDING_ACCEPT --接单--> PROCESSING --提交处理-
 | 类型 | 依赖 | 运行方式 | 覆盖内容 |
 | --- | --- | --- | --- |
 | 单元测试 | 无（Mockito） | `mvn test` | 状态机、权限判定、编号生成、参数校验器、缓存键与失效逻辑、文件名校验 |
-| 集成测试 | 真实 MySQL + Redis | `mvn verify -Pintegration` | 认证、越权、数据隔离、工单全流程、并发接单、统计数值、缓存失效与降级、附件权限 |
+| 集成测试 | 真实 MySQL + Redis | `mvn verify`（Failsafe，`*IntegrationTest`） | 认证、越权、数据隔离、工单全流程、并发接单、统计数值、缓存失效与降级、附件权限 |
 
 ### 12.2 关键测试用例设计（示例）
 

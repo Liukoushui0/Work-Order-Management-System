@@ -364,10 +364,10 @@
 | 层级 | 范围 | 运行方式 |
 | --- | --- | --- |
 | 单元测试 | 状态机、权限判定、编号生成、校验器、缓存键与失效逻辑、文件名校验 | `mvn test`（默认，无需外部依赖） |
-| 集成测试 | 认证、鉴权、数据隔离、工单流转、并发接单、统计正确性、缓存失效、附件权限 | `mvn verify -Pintegration`（需本地 MySQL 8 + Redis） |
+| 集成测试 | 认证、鉴权、数据隔离、工单流转、并发接单、统计正确性、缓存失效、附件权限 | `mvn verify`（Maven Failsafe 按 `*IntegrationTest` 命名约定执行，需本地 MySQL 8 + Redis） |
 | 接口级手工验证 | OpenAPI 文档与实际响应结构一致性 | 启动应用后通过 Swagger UI / HTTP 客户端验证 |
 
-**约定**：集成测试统一打 `@Tag("integration")`，默认构建排除，`integration` profile 执行。这样 `mvn test` 在没有数据库的机器上依然可运行；阶段验收必须执行完整（含集成）测试。
+**约定**：集成测试统一打 `@Tag("integration")` 并以 `*IntegrationTest` 命名，由 Maven Failsafe 插件在 `verify` 阶段执行；`mvn test`（Surefire）排除它们，因此在没有数据库的机器上依然可运行。阶段验收必须执行完整测试，即 `mvn verify`。
 
 ### 4.2 前端
 
@@ -433,7 +433,7 @@
 | --- | --- | --- | --- |
 | Stage 0 | 环境检查、开发计划与技术设计 | 已完成（2026-10-15） | 通过：四份文档已产出；三个环境阻塞项（JDK 17 / MySQL 凭据 / Redis）经用户确认后处理完毕；首次提交 `38772a3` 已推送至 `github` 与 `gitee`，三处 `main` 指向同一提交 |
 | Stage 1 | 工程骨架与基础设施 | 已完成 | 通过：后端 9 个测试与前端 10 个测试全部通过；`mvn package`、`npm run lint/test/build` 均通过；前后端联调实测成功（Vite 代理 → 后端 → MySQL/Redis 全 UP）。过程中修复 2 个真实缺陷：Logback 1.5 不再支持 `SizeAndTimeBasedFNATP`、Element Plus 2.8.8 `el-tag` 挂载钩子空指针；并按用户要求将前端由 TypeScript 迁移为 JavaScript（移除 `npm run type-check`）。详见 TECHNICAL_DESIGN.md 第 2.3.1 节 |
-| Stage 2 | 数据库、认证与权限 | 未开始 | — |
+| Stage 2 | 数据库、认证与权限 | 已完成 | 通过：16 张表与基础数据脚本落地并实测可重复执行；后端 40 个单元测试 + 23 个集成测试全部通过；README/DATABASE_DESIGN 更新。过程中修复 3 个真实缺陷：登录失败计数被事务回滚导致锁定永不生效、`@PreAuthorize` 拒绝被兜底成 500、Redis 实例 RDB 持久化失败进入 MISCONF 导致黑名单写入静默失效 |
 | Stage 3 | 客户与设备档案管理 | 未开始 | — |
 | Stage 4 | 工单核心业务 | 未开始 | — |
 | Stage 5 | 评价、附件与操作记录 | 未开始 | — |

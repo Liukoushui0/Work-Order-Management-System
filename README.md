@@ -2,7 +2,7 @@
 
 ServiceFlow（Work Order Management System）是一个面向销售设备、智能硬件或软件产品企业售后团队的工单管理系统，覆盖客户报修、客服建单、工单派发、维修处理、服务评价与运营分析。
 
-> 当前进度：**Stage 1（工程骨架与基础设施）已完成**。完整功能按 `docs/DEVELOPMENT_PLAN.md` 的阶段划分推进，README 会随阶段推进持续补充。
+> 当前进度：**Stage 2（数据库、认证与权限）已完成** —— 已落地 16 张业务表、四角色 RBAC、JWT 认证与操作审计，并通过 40 个单元测试与 23 个集成测试。完整功能按 `docs/DEVELOPMENT_PLAN.md` 的阶段划分推进，README 随阶段持续补充。
 
 ## 技术栈
 
@@ -37,10 +37,15 @@ mysql -u root -p -e "CREATE DATABASE IF NOT EXISTS serviceflow DEFAULT CHARACTER
 ### 2. 启动 Redis
 
 ```powershell
-# 以本机 Redis 安装目录为例
-& "D:\Tools\Redis\Redis-x64-5.0.14.1\redis-server.exe" "D:\Tools\Redis\Redis-x64-5.0.14.1\redis.windows.conf"
+# 必须显式指定 --dir（Redis 的数据目录），否则 RDB 持久化可能失败
+Set-Location "D:\Tools\Redis\Redis-x64-5.0.14.1"
+.\redis-server.exe redis.windows.conf --dir "D:\Tools\Redis\Redis-x64-5.0.14.1"
 redis-cli ping   # 期望输出 PONG
 ```
+
+> 排错提示：如果 `redis-cli` 返回 `MISCONF Redis is configured to save RDB snapshots, but it is currently not able to persist on disk`，
+> 说明该实例的快照写入失败，此时**所有写命令（含缓存与令牌黑名单）都会被拒绝**，而连接与 `PING` 仍然正常，容易被误判为"Redis 正常"。
+> 处理方式：以安装目录为工作目录并用 `--dir` 指向可写目录重启 Redis，然后执行 `redis-cli bgsave` 确认 `rdb_last_bgsave_status:ok`。
 
 ### 3. 启动后端
 
@@ -54,6 +59,8 @@ $env:DB_NAME = "serviceflow"
 cd backend
 .\mvnw.cmd spring-boot:run
 ```
+
+> 首次启动前请按 [docs/DATABASE_DESIGN.md](docs/DATABASE_DESIGN.md) 第 7 节执行 `db/schema.sql` 与 `db/data.sql`。
 
 后端默认端口 `8080`，启动后：
 
@@ -74,19 +81,33 @@ npm run dev
 ## 测试与构建
 
 ```powershell
-# 后端：单元测试（默认不执行集成测试）
+# 后端：单元测试（仅依赖 JVM，不需要数据库与 Redis）
 cd backend
 .\mvnw.cmd clean test
 
-# 后端：打包
+# 后端：单元测试 + 集成测试（需要本地 MySQL 与 Redis 已启动）
+.\mvnw.cmd clean verify
+
+# 后端：打包（同时执行单元测试）
 .\mvnw.cmd package
 
-# 前端：类型检查、规范检查、单元测试、构建
+# 前端：规范检查、单元测试、构建（本项目不使用 TypeScript，无类型检查步骤）
 cd frontend
 npm run lint
 npm run test
 npm run build
 ```
+
+### 演示账号
+
+本地开发演示账号统一密码 `Serviceflow@2026`（明文仅用于本地联调，库中以 BCrypt 哈希存储；完整说明见 [docs/DATABASE_DESIGN.md](docs/DATABASE_DESIGN.md) 第 6.1 节）。
+
+| 账号 | 角色 | 说明 |
+| --- | --- | --- |
+| `admin` | 系统管理员 | 全部权限 |
+| `service01` | 售后客服 | 客户、设备、工单创建与分派 |
+| `engineer01` / `engineer02` | 维修工程师 | 接单与维修处理 |
+| `customer01` / `customer02` | 客户 | 查看本人工单、确认与评价 |
 
 ## 目录结构
 
@@ -118,3 +139,4 @@ npm run build
 | [docs/TECHNICAL_DESIGN.md](docs/TECHNICAL_DESIGN.md) | 架构、数据库、状态机、权限、API 与缓存设计 |
 | [docs/GIT_WORKFLOW.md](docs/GIT_WORKFLOW.md) | 分支策略、提交规范与双远程同步流程 |
 | [docs/STAGE0_ENVIRONMENT_CHECK.md](docs/STAGE0_ENVIRONMENT_CHECK.md) | 环境检查记录与处理结果 |
+| [docs/DATABASE_DESIGN.md](docs/DATABASE_DESIGN.md) | 数据库表结构、约束、索引、演示账号与初始化步骤 |

@@ -1,6 +1,7 @@
 # ServiceFlow 企业售后工单管理系统 — 数据库设计
 
 > 文档版本：v1.0（随 Stage 2 交付）
+> 最终交付说明：本文档与 `db/schema.sql` 保持一致（17 张表）；交付总览见 [FINAL_DELIVERY.md](./FINAL_DELIVERY.md)。
 > 结构脚本：[backend/src/main/resources/db/schema.sql](../backend/src/main/resources/db/schema.sql)
 > 基础数据脚本：[backend/src/main/resources/db/data.sql](../backend/src/main/resources/db/data.sql)
 > 关联文档：[TECHNICAL_DESIGN.md](./TECHNICAL_DESIGN.md)

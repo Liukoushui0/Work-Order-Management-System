@@ -1,0 +1,44 @@
+# ========== Java / Maven ==========
+target/
+*.class
+*.jar
+*.war
+!**/.mvn/wrapper/maven-wrapper.jar
+
+# ========== Node / Vite ==========
+node_modules/
+dist/
+dist-ssr/
+coverage/
+.vite/
+*.local
+.npm-cache/
+
+# ========== IDE ==========
+.idea/
+*.iml
+*.ipr
+*.iws
+.vscode/
+
+# ========== 本地配置与敏感信息 ==========
+.env
+.env.local
+.env.*.local
+application-local.yml
+application-local.properties
+*.pem
+*.key
+*.p12
+
+# ========== 运行时数据 ==========
+logs/
+*.log
+storage/
+uploads/
+*.rdb
+
+# ========== 系统文件 ==========
+.DS_Store
+Thumbs.db
+desktop.ini

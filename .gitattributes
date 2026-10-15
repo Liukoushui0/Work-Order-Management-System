@@ -1,0 +1,21 @@
+# 统一换行符，避免 Windows 与 Linux 之间产生无意义差异
+* text=auto eol=lf
+
+# Windows 脚本保持 CRLF
+*.cmd text eol=crlf
+*.bat text eol=crlf
+
+# Shell 脚本与 Maven Wrapper 使用 LF
+mvnw text eol=lf
+*.sh text eol=lf
+
+# 二进制文件不做换行转换
+*.jar binary
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.zip binary
+*.woff binary
+*.woff2 binary

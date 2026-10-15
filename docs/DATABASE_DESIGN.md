@@ -22,7 +22,7 @@
 
 | 脚本 | 内容 | 使用场景 |
 | --- | --- | --- |
-| `db/schema.sql` | 16 张表的结构、索引与约束（`CREATE TABLE IF NOT EXISTS`，可重复执行） | 所有环境 |
+| `db/schema.sql` | 17 张表的结构、索引与约束（`CREATE TABLE IF NOT EXISTS`，可重复执行） | 所有环境 |
 | `db/data.sql` | 角色、权限、角色权限关系、演示账号、故障分类、系统配置 | 本地开发与测试环境 |
 | `db/demo-data.sql` | 业务演示数据：4 个客户、8 台设备，并绑定客户演示账号的 `customer_id` | 本地开发与测试环境（工单与评价演示数据随 Stage 4~5 补充） |
 

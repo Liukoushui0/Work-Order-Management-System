@@ -581,6 +581,7 @@ PENDING_ASSIGN --分派--> PENDING_ACCEPT --接单--> PROCESSING --提交处理-
 - **图表**：`BaseChart.vue` 封装 ECharts 实例与自适应，数据全部来自统计接口，无硬编码数字。
 - **构建产物**：通过 `build.rollupOptions.output.manualChunks` 把 vue、Element Plus、ECharts 拆为独立分包，配合路由懒加载；主包由 1.1MB 降至 51KB（gzip 21KB），ECharts 仅随图表页面加载。Element Plus 目前为全量引入（独立分包，gzip 约 330KB），如需进一步减小可改为按需引入。
 - **测试**：Vitest + Vue Test Utils 覆盖组件渲染、表单校验、接口异常反馈、菜单/路由权限配置与核心交互；Element Plus 图标在 `src/test/setup.js` 中全局注册，避免用例出现组件解析告警。
+- **设计系统**：颜色、圆角、阴影、间距统一由 `src/styles/index.css` 的 CSS 变量管理（`--sf-primary` 等），并对齐 Element Plus 变量（`--el-color-primary`）；卡片、表格、菜单、标签、滚动条、页面淡入动画等公共观感在全局层统一，页面只写业务样式。侧边栏品牌区使用主色渐变，菜单项圆角化并在选中态显示左侧指示条；仪表盘指标卡使用左侧色条 + 悬浮上移；登录页使用径向渐变背景与品牌渐变面板。所有样式改动均通过 ESLint、25 个组件测试与生产构建验证。
 
 ---
 

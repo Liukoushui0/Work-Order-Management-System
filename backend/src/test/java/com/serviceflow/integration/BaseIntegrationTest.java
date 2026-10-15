@@ -61,6 +61,8 @@ public abstract class BaseIntegrationTest {
                 + "WHERE u.username LIKE 'it\\_%'");
         jdbcTemplate.update("DELETE FROM sys_user WHERE username LIKE 'it\\_%'");
         jdbcTemplate.update("DELETE FROM fault_category WHERE category_code LIKE 'IT-%'");
+        jdbcTemplate.update("DELETE FROM device WHERE device_code LIKE 'IT-%'");
+        jdbcTemplate.update("DELETE FROM customer WHERE customer_code LIKE 'IT-%'");
     }
 
     /**

@@ -72,3 +72,109 @@ ON DUPLICATE KEY UPDATE device_name          = VALUES(device_name),
 -- ---------------------------------------------------------------------------
 UPDATE sys_user SET customer_id = 1 WHERE username = 'customer01';
 UPDATE sys_user SET customer_id = 2 WHERE username = 'customer02';
+
+-- ---------------------------------------------------------------------------
+-- 4. 工单演示数据
+-- 说明：编号使用固定的 SO202601010000xx 前缀（与运行日期的当日序列互不冲突），
+--       覆盖待分派、待接单、处理中、待确认、已完成、已取消与逾期七种场景。
+-- ---------------------------------------------------------------------------
+INSERT INTO service_ticket (id, ticket_no, title, description, customer_id, device_id, fault_category_id,
+                            priority, status, source, reporter_name, reporter_phone, assignee_id, deadline_time,
+                            assign_time, accept_time, start_time, finish_time, confirm_time, closed_time,
+                            cancel_time, cancel_reason, reject_count, reopen_count, transfer_count, handle_hours,
+                            version, create_by, create_time)
+VALUES (1, 'SO20260101000001', '分拣终端无法启动', '设备上电后指示灯不亮，产线停机', 1, 1, 1,
+        'URGENT', 'COMPLETED', 'PHONE', '张伟', '13910000001', 3,
+        DATE_ADD(NOW(), INTERVAL -10 DAY), DATE_ADD(NOW(), INTERVAL -12 DAY), DATE_ADD(NOW(), INTERVAL -11 DAY),
+        DATE_ADD(NOW(), INTERVAL -11 DAY), DATE_ADD(NOW(), INTERVAL -11 DAY) + INTERVAL 6 HOUR,
+        DATE_ADD(NOW(), INTERVAL -10 DAY), DATE_ADD(NOW(), INTERVAL -10 DAY), NULL, NULL, 0, 0, 0, 6.00, 0, 2,
+        DATE_ADD(NOW(), INTERVAL -12 DAY)),
+       (2, 'SO20260101000002', '视觉检测仪误报率升高', '近一周误报率由 1% 上升到 6%', 1, 3, 2,
+        'HIGH', 'PENDING_CONFIRM', 'WEB', '张伟', '13910000001', 4,
+        DATE_ADD(NOW(), INTERVAL 20 HOUR), DATE_ADD(NOW(), INTERVAL -3 DAY), DATE_ADD(NOW(), INTERVAL -3 DAY),
+        DATE_ADD(NOW(), INTERVAL -3 DAY), DATE_ADD(NOW(), INTERVAL -1 DAY), NULL, NULL, NULL, NULL, 0, 1, 1, 48.00, 0, 2,
+        DATE_ADD(NOW(), INTERVAL -3 DAY)),
+       (3, 'SO20260101000003', '数据采集网关频繁掉线', '每小时掉线 2~3 次，影响数据上报', 2, 4, 3,
+        'HIGH', 'PROCESSING', 'WECHAT', '李娜', '13910000002', 3,
+        DATE_ADD(NOW(), INTERVAL 4 HOUR), DATE_ADD(NOW(), INTERVAL -1 DAY), DATE_ADD(NOW(), INTERVAL -1 DAY),
+        DATE_ADD(NOW(), INTERVAL -1 DAY), NULL, NULL, NULL, NULL, NULL, 0, 0, 0, NULL, 0, 2,
+        DATE_ADD(NOW(), INTERVAL -1 DAY)),
+       (4, 'SO20260101000004', '手持终端电池续航异常', '满电仅可使用 1.5 小时', 2, 5, 4,
+        'MEDIUM', 'PENDING_ACCEPT', 'PHONE', '李娜', '13910000002', 4,
+        DATE_ADD(NOW(), INTERVAL 12 HOUR), DATE_ADD(NOW(), INTERVAL -6 HOUR),
+        NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+        0, 0, 1, NULL, 0, 2, DATE_ADD(NOW(), INTERVAL -8 HOUR)),
+       (5, 'SO20260101000005', '冷库温控记录仪数据偏差', '温度读数比实际低 2 摄氏度', 3, 6, 6,
+        'MEDIUM', 'PENDING_ASSIGN', 'EMAIL', '王强', '13910000003', NULL,
+        DATE_ADD(NOW(), INTERVAL 16 HOUR), NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, 0, 0, NULL, 0, 2,
+        DATE_ADD(NOW(), INTERVAL -8 HOUR)),
+       (6, 'SO20260101000006', '水质监测仪无法联网', '设备离线，无法推送监测数据', 4, 8, 3,
+        'LOW', 'PENDING_ASSIGN', 'WEB', '赵敏', '13910000004', NULL,
+        DATE_ADD(NOW(), INTERVAL 40 HOUR), NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, 0, 0, NULL, 0, 2,
+        DATE_ADD(NOW(), INTERVAL -4 HOUR)),
+       (7, 'SO20260101000007', '报废设备回收确认', '客户申请报废设备上门回收', 3, 7, 8,
+        'LOW', 'CANCELLED', 'PHONE', '王强', '13910000003', NULL,
+        DATE_ADD(NOW(), INTERVAL -2 DAY), NULL, NULL, NULL, NULL, NULL, NULL, DATE_ADD(NOW(), INTERVAL -3 DAY),
+        '客户改为自行处理', 0, 0, 0, NULL, 0, 2, DATE_ADD(NOW(), INTERVAL -3 DAY)),
+       (8, 'SO20260101000008', '分拣终端急停按钮失灵', '急停按钮按下无响应，存在安全隐患', 1, 2, 1,
+        'URGENT', 'PENDING_ACCEPT', 'PHONE', '张伟', '13910000001', 4,
+        DATE_ADD(NOW(), INTERVAL -20 HOUR), DATE_ADD(NOW(), INTERVAL -2 DAY),
+        NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+        0, 0, 0, NULL, 0, 2, DATE_ADD(NOW(), INTERVAL -2 DAY))
+ON DUPLICATE KEY UPDATE title                = VALUES(title),
+                        description          = VALUES(description),
+                        customer_id          = VALUES(customer_id),
+                        device_id            = VALUES(device_id),
+                        fault_category_id    = VALUES(fault_category_id),
+                        priority             = VALUES(priority),
+                        status               = VALUES(status),
+                        assignee_id          = VALUES(assignee_id),
+                        deadline_time        = VALUES(deadline_time),
+                        confirm_time         = VALUES(confirm_time),
+                        closed_time          = VALUES(closed_time),
+                        cancel_reason        = VALUES(cancel_reason),
+                        handle_hours         = VALUES(handle_hours);
+
+-- 工单分派记录（仅保留有效分派，历史流转见处理记录）
+INSERT INTO ticket_assignment (id, ticket_id, from_user_id, to_user_id, assign_type, reason, active_flag, create_by, create_time)
+VALUES (1, 4, NULL, 4, 'ASSIGN', '就近安排工程师', 1, 2, DATE_ADD(NOW(), INTERVAL -6 HOUR)),
+       (2, 8, NULL, 4, 'ASSIGN', '紧急工单优先处理', 1, 2, DATE_ADD(NOW(), INTERVAL -2 DAY))
+ON DUPLICATE KEY UPDATE to_user_id = VALUES(to_user_id),
+                        reason     = VALUES(reason),
+                        active_flag = VALUES(active_flag);
+
+-- 工单处理记录（演示主流程留痕）
+INSERT INTO ticket_process_record (id, ticket_id, operator_id, operator_name, operator_role, action, from_status,
+                                   to_status, content, used_hours, create_time)
+VALUES (1, 1, 2, '客服一号', 'ROLE_SERVICE', 'CREATE', NULL, 'PENDING_ASSIGN', '工单创建成功，等待分派', NULL,
+        DATE_ADD(NOW(), INTERVAL -12 DAY)),
+       (2, 1, 2, '客服一号', 'ROLE_SERVICE', 'ASSIGN', 'PENDING_ASSIGN', 'PENDING_ACCEPT', '分派给维修工程师一号', NULL,
+        DATE_ADD(NOW(), INTERVAL -12 DAY)),
+       (3, 1, 3, '维修工程师一号', 'ROLE_ENGINEER', 'ACCEPT', 'PENDING_ACCEPT', 'PROCESSING', '工程师接单，开始处理', NULL,
+        DATE_ADD(NOW(), INTERVAL -11 DAY)),
+       (4, 1, 3, '维修工程师一号', 'ROLE_ENGINEER', 'PROCESS', 'PROCESSING', 'PROCESSING', '更换电源模块并复测通过', 4.00,
+        DATE_ADD(NOW(), INTERVAL -11 DAY) + INTERVAL 4 HOUR),
+       (5, 1, 3, '维修工程师一号', 'ROLE_ENGINEER', 'COMPLETE', 'PROCESSING', 'PENDING_CONFIRM', '设备已恢复正常运行，产线复机', 6.00,
+        DATE_ADD(NOW(), INTERVAL -11 DAY) + INTERVAL 6 HOUR),
+       (6, 1, 5, '客户联系人一', 'ROLE_CUSTOMER', 'CONFIRM', 'PENDING_CONFIRM', 'COMPLETED', '客户确认服务结果', NULL,
+        DATE_ADD(NOW(), INTERVAL -10 DAY)),
+       (7, 2, 2, '客服一号', 'ROLE_SERVICE', 'CREATE', NULL, 'PENDING_ASSIGN', '工单创建成功，等待分派', NULL,
+        DATE_ADD(NOW(), INTERVAL -3 DAY)),
+       (8, 2, 2, '客服一号', 'ROLE_SERVICE', 'ASSIGN', 'PENDING_ASSIGN', 'PENDING_ACCEPT', '分派给维修工程师二号', NULL,
+        DATE_ADD(NOW(), INTERVAL -3 DAY)),
+       (9, 2, 4, '维修工程师二号', 'ROLE_ENGINEER', 'ACCEPT', 'PENDING_ACCEPT', 'PROCESSING', '工程师接单，开始处理', NULL,
+        DATE_ADD(NOW(), INTERVAL -3 DAY)),
+       (10, 2, 4, '维修工程师二号', 'ROLE_ENGINEER', 'PROCESS', 'PROCESSING', 'PROCESSING', '重新标定视觉模型参数', 8.00,
+        DATE_ADD(NOW(), INTERVAL -2 DAY)),
+       (11, 2, 4, '维修工程师二号', 'ROLE_ENGINEER', 'REOPEN', 'PENDING_CONFIRM', 'PROCESSING', '退回重做：客户反馈误报仍偏高', NULL,
+        DATE_ADD(NOW(), INTERVAL -2 DAY)),
+       (12, 4, 2, '客服一号', 'ROLE_SERVICE', 'CREATE', NULL, 'PENDING_ASSIGN', '工单创建成功，等待分派', NULL,
+        DATE_ADD(NOW(), INTERVAL -8 HOUR))
+ON DUPLICATE KEY UPDATE content    = VALUES(content),
+                        action     = VALUES(action),
+                        to_status  = VALUES(to_status),
+                        operator_id = VALUES(operator_id);
+
+-- 演示工单使用了 2026-01-01 前缀，同步初始化该日期的序列号，避免与真实建单编号冲突
+INSERT INTO ticket_sequence (seq_date, current_value) VALUES ('2026-01-01', 8)
+ON DUPLICATE KEY UPDATE current_value = GREATEST(current_value, VALUES(current_value));

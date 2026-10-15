@@ -1,16 +1,15 @@
-<script setup lang="ts">
+<script setup>
 import { onMounted, ref } from 'vue'
 import { ElMessage } from 'element-plus'
 
 import { fetchHealth } from '@/api/health'
 import { normalizeError } from '@/utils/request'
-import type { HealthStatus } from '@/types/api'
 
 const loading = ref(false)
 const errorMessage = ref('')
-const health = ref<HealthStatus | null>(null)
+const health = ref(null)
 
-const statusTagType = (value?: string) => (value === 'UP' ? 'success' : 'danger')
+const statusTagType = value => (value === 'UP' ? 'success' : 'danger')
 
 async function loadHealth() {
   loading.value = true

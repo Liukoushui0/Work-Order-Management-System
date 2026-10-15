@@ -1,13 +1,13 @@
-import { createRouter, createWebHistory, type RouteRecordRaw } from 'vue-router'
+import { createRouter, createWebHistory } from 'vue-router'
 
 import MainLayout from '@/layouts/MainLayout.vue'
 
 /**
  * 路由表：
- * - Stage 1 仅包含应用外壳、仪表盘与 404；
+ * - 当前阶段包含应用外壳、仪表盘与 404；
  * - 登录页、业务页面与基于角色的路由守卫在后续阶段随对应后端模块一并接入。
  */
-export const routes: RouteRecordRaw[] = [
+export const routes = [
   {
     path: '/',
     component: MainLayout,

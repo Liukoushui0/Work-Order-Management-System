@@ -1,11 +1,11 @@
-<script setup lang="ts">
+<script setup>
 import { computed } from 'vue'
 import { useRoute } from 'vue-router'
 
 const route = useRoute()
 
-const breadcrumbs = computed<string[]>(() => {
-  const items = route.meta.breadcrumb as string[] | undefined
+const breadcrumbs = computed(() => {
+  const items = route.meta.breadcrumb
   return items && items.length > 0 ? items : ['首页']
 })
 

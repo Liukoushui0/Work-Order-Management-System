@@ -12,6 +12,7 @@ import router from '@/router'
 
 const app = createApp(App)
 
+// 注册 Element Plus 图标组件，模板中可直接使用 <el-icon><DataLine /></el-icon>
 for (const [name, component] of Object.entries(ElementPlusIconsVue)) {
   app.component(name, component)
 }

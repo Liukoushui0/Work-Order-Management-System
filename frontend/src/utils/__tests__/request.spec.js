@@ -3,14 +3,14 @@ import { AxiosError } from 'axios'
 
 import { ApiError, normalizeError } from '@/utils/request'
 
-function axiosErrorWithResponse(status: number, data?: unknown): AxiosError {
+function axiosErrorWithResponse(status, data) {
   const error = new AxiosError('Request failed', 'ERR_BAD_REQUEST')
   // 构造与 axios 运行时一致的响应结构
   error.response = {
     status,
     statusText: '',
     headers: {},
-    config: {} as never,
+    config: {},
     data
   }
   return error

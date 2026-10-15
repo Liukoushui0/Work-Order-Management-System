@@ -15,6 +15,7 @@ public enum TicketAction {
     CONFIRM("客户确认"),
     AUTO_CONFIRM("超期自动确认"),
     REOPEN("退回重做或重新打开"),
+    EVALUATE("提交服务评价"),
     CANCEL("取消工单");
 
     private final String label;

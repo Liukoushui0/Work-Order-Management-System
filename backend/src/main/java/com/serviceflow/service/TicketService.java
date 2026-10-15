@@ -27,6 +27,9 @@ import com.serviceflow.entity.ServiceTicket;
 import com.serviceflow.entity.SysRole;
 import com.serviceflow.entity.SysUser;
 import com.serviceflow.entity.TicketAssignment;
+import com.serviceflow.entity.TicketAttachment;
+import com.serviceflow.entity.TicketComment;
+import com.serviceflow.entity.TicketEvaluation;
 import com.serviceflow.entity.TicketProcessRecord;
 import com.serviceflow.mapper.CustomerMapper;
 import com.serviceflow.mapper.DeviceMapper;
@@ -35,12 +38,16 @@ import com.serviceflow.mapper.ServiceTicketMapper;
 import com.serviceflow.mapper.SysRoleMapper;
 import com.serviceflow.mapper.SysUserMapper;
 import com.serviceflow.mapper.TicketAssignmentMapper;
+import com.serviceflow.mapper.TicketAttachmentMapper;
+import com.serviceflow.mapper.TicketCommentMapper;
+import com.serviceflow.mapper.TicketEvaluationMapper;
 import com.serviceflow.mapper.TicketProcessRecordMapper;
 import com.serviceflow.security.AccessGuard;
 import com.serviceflow.security.DataScopeService;
 import com.serviceflow.security.SecurityUtils;
 import com.serviceflow.security.UserPrincipal;
 import com.serviceflow.vo.TicketDetailVO;
+import com.serviceflow.vo.EvaluationVO;
 import com.serviceflow.vo.TicketRecordVO;
 import com.serviceflow.vo.TicketVO;
 import org.slf4j.Logger;
@@ -92,6 +99,9 @@ public class TicketService {
     private final ConfigService configService;
     private final RedisLockService redisLockService;
     private final TicketNoGenerator ticketNoGenerator;
+    private final TicketEvaluationMapper evaluationMapper;
+    private final TicketAttachmentMapper attachmentMapper;
+    private final TicketCommentMapper commentMapper;
 
     public TicketService(ServiceTicketMapper ticketMapper,
                          TicketAssignmentMapper assignmentMapper,
@@ -105,7 +115,10 @@ public class TicketService {
                          AccessGuard accessGuard,
                          ConfigService configService,
                          RedisLockService redisLockService,
-                         TicketNoGenerator ticketNoGenerator) {
+                         TicketNoGenerator ticketNoGenerator,
+                         TicketEvaluationMapper evaluationMapper,
+                         TicketAttachmentMapper attachmentMapper,
+                         TicketCommentMapper commentMapper) {
         this.ticketMapper = ticketMapper;
         this.assignmentMapper = assignmentMapper;
         this.recordMapper = recordMapper;
@@ -119,6 +132,9 @@ public class TicketService {
         this.configService = configService;
         this.redisLockService = redisLockService;
         this.ticketNoGenerator = ticketNoGenerator;
+        this.evaluationMapper = evaluationMapper;
+        this.attachmentMapper = attachmentMapper;
+        this.commentMapper = commentMapper;
     }
 
     // --------------------------------------------------------------- 查询
@@ -222,6 +238,23 @@ public class TicketService {
                     || !device.getWarrantyExpireDate().isBefore(LocalDate.now()));
         }
         detail.setRecords(recordsOf(id));
+        detail.setAttachmentCount(attachmentMapper.selectCount(Wrappers.<TicketAttachment>lambdaQuery()
+                .eq(TicketAttachment::getTicketId, id)
+                .eq(TicketAttachment::getDeleted, 0L)));
+        UserPrincipal viewer = SecurityUtils.currentUser();
+        boolean staffViewer = viewer.hasRole(AccessGuard.ROLE_ADMIN) || viewer.hasRole(AccessGuard.ROLE_SERVICE)
+                || viewer.hasRole(AccessGuard.ROLE_ENGINEER);
+        // 客户只能看到公开评论数量，内部备注不外泄
+        detail.setCommentCount(commentMapper.selectCount(Wrappers.<TicketComment>lambdaQuery()
+                .eq(TicketComment::getTicketId, id)
+                .eq(TicketComment::getDeleted, 0L)
+                .eq(!staffViewer, TicketComment::getIsInternal, 0)));
+        TicketEvaluation evaluation = evaluationMapper.selectOne(Wrappers.<TicketEvaluation>lambdaQuery()
+                .eq(TicketEvaluation::getTicketId, id));
+        if (evaluation != null) {
+            detail.setEvaluation(EvaluationVO.from(evaluation,
+                    evaluation.getEvaluatorId().equals(viewer.getUserId())));
+        }
         return detail;
     }
 
@@ -232,6 +265,24 @@ public class TicketService {
     public List<TicketRecordVO> records(Long ticketId) {
         assertVisible(requireTicket(ticketId));
         return recordsOf(ticketId);
+    }
+
+    /**
+     * 校验当前用户可访问该工单并返回工单实体，供评价、附件、评论等模块复用。
+     */
+    @Transactional(readOnly = true)
+    public ServiceTicket requireVisibleTicket(Long ticketId) {
+        ServiceTicket ticket = requireTicket(ticketId);
+        assertVisible(ticket);
+        return ticket;
+    }
+
+    /**
+     * 追加一条处理记录（供评价等由其他模块触发的动作复用）。
+     */
+    @Transactional(rollbackFor = Exception.class)
+    public void appendRecord(Long ticketId, TicketAction action, String fromStatus, String toStatus, String content) {
+        addRecord(requireTicket(ticketId), action, fromStatus, toStatus, content, null);
     }
 
     // --------------------------------------------------------------- 创建

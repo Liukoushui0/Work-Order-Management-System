@@ -48,6 +48,7 @@
 | 14 | `ticket_evaluation` | 服务评价 | 一单一评（唯一约束） |
 | 15 | `ticket_attachment` | 工单附件 | 文件元数据 |
 | 16 | `sys_operation_log` | 操作日志 | 审计 |
+| 17 | `ticket_sequence` | 工单当日序列 | 原子取号，保证工单编号唯一（见 3.3） |
 
 ## 3. 关键约束与索引
 
@@ -85,6 +86,23 @@
 | `ticket_evaluation` | `idx_evaluation_customer`、`idx_evaluation_create` | 满意度统计 |
 
 > 统计类查询（趋势、分布、工作量）在 Stage 6 实现时会基于上述索引设计聚合 SQL，必要时补充冗余统计字段或关联索引，并记录执行计划。
+
+### 3.3 工单编号的并发取号策略
+
+工单编号格式为 `SO + yyyyMMdd + 6 位当日序列`。取号使用独立序列表 `ticket_sequence`：
+
+```sql
+INSERT INTO ticket_sequence (seq_date, current_value) VALUES (:today, 1)
+ON DUPLICATE KEY UPDATE current_value = current_value + 1;
+SELECT current_value FROM ticket_sequence WHERE seq_date = :today;
+```
+
+**为什么不用"查询当日最大值 + 唯一索引冲突重试"**：在 MySQL 默认的 REPEATABLE READ 隔离级别下，
+同一事务内重复执行 `SELECT MAX(...)` 会一直读到事务开始时的快照，并发建单时多个事务会反复生成同一个编号，
+造成重试风暴并最终触发死锁（该问题由并发集成测试真实复现：`mvn verify` 中 5 线程并发建单曾出现 DuplicateKey 4 次重试 + Deadlock）。
+改为序列表后：`INSERT ... ON DUPLICATE KEY UPDATE` 在同一行上加排他锁并原子自增，并发建单按顺序取到不同序列号，
+事务内 `SELECT` 必定读到本事务写入的值，无需重试。代价是建单事务在取号时对该行加锁并在提交后释放，
+对本系统的建单频率而言完全可接受。`uk_ticket_no` 唯一索引仍保留作为最终兜底。
 
 ## 4. 状态与枚举取值
 
@@ -147,6 +165,9 @@
 | 客户 | 4 | `CUS-0001`（A 级，重点客户）、`CUS-0002`（B 级）、`CUS-0003`（A 级，多仓库）、`CUS-0004`（C 级，新客户） |
 | 设备 | 8 | 覆盖智能终端、检测设备、网络设备、手持终端、监测设备，含 1 台报废设备与 1 台保修即将到期设备 |
 | 账号绑定 | 2 | `customer01` → 客户 1，`customer02` → 客户 2 |
+| 工单 | 8 | 编号使用固定前缀 `SO202601010000xx`，覆盖待分派 2、待接单 2、处理中 1、待确认 1、已完成 1、已取消 1，其中 1 张为逾期工单 |
+| 工单处理记录 | 12 | 演示创建、分派、接单、处理、提交、确认与退回重做的完整留痕 |
+| 工单分派记录 | 2 | 当前有效的分派关系（`active_flag = 1`） |
 
 `demo-data.sql` 可重复执行（`INSERT ... ON DUPLICATE KEY UPDATE` + 绑定 `UPDATE`），实测重复执行后数据量保持不变。
 

@@ -371,3 +371,15 @@ CREATE TABLE IF NOT EXISTS sys_operation_log (
     KEY idx_log_user (user_id, create_time),
     KEY idx_log_module (module, create_time)
 ) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_general_ci COMMENT = '操作日志表';
+
+-- ----------------------------------------------------------------------------
+-- 17. ticket_sequence 工单当日序列号表
+-- 说明：用 INSERT ... ON DUPLICATE KEY UPDATE 在同一行上原子自增取号，
+--       避免"查询当日最大值 + 唯一索引冲突重试"在并发下产生重试风暴与死锁
+--       （REPEATABLE READ 下同事务内重复查询 MAX 会读到相同快照）。
+-- ----------------------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS ticket_sequence (
+    seq_date      DATE   NOT NULL COMMENT '业务日期',
+    current_value BIGINT NOT NULL DEFAULT 0 COMMENT '当日已分配的最大序列号',
+    PRIMARY KEY (seq_date)
+) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_general_ci COMMENT = '工单当日序列号表';

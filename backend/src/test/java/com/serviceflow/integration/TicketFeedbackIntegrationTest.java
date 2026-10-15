@@ -176,6 +176,34 @@ class TicketFeedbackIntegrationTest extends BaseIntegrationTest {
     // ------------------------------------------------------------ 评论
 
     @Test
+    @DisplayName("管理员可在客户未评价时代为提交评价（授权数据与权限校验一致性）")
+    void adminCanEvaluateOnBehalfOfCustomer() throws Exception {
+        String serviceToken = login("service01", PASSWORD);
+        String engineerToken = login("engineer01", PASSWORD);
+        String customerToken = login("customer01", PASSWORD);
+        String adminToken = login("admin", PASSWORD);
+        long ticketId = completeTicket(serviceToken, engineerToken, customerToken,
+                CUSTOMER_ONE, DEVICE_OF_CUSTOMER_ONE);
+
+        JsonNode created = call(HttpMethod.POST, "/api/v1/tickets/" + ticketId + "/evaluation", adminToken,
+                Map.of("score", 4, "content", "管理员回访代评"), 200);
+        assertThat(created.path("data").path("score").asInt()).isEqualTo(4);
+        assertThat(created.path("data").path("customerId").asLong()).isEqualTo(CUSTOMER_ONE);
+
+        // 一单一评：管理员代评后客户不能再次评价
+        JsonNode duplicate = call(HttpMethod.POST, "/api/v1/tickets/" + ticketId + "/evaluation", customerToken,
+                Map.of("score", 5), 409);
+        assertThat(duplicate.path("code").asInt()).isEqualTo(1502);
+
+        // 客服角色没有 ticket:evaluate 权限
+        long anotherTicket = completeTicket(serviceToken, engineerToken, customerToken,
+                CUSTOMER_ONE, DEVICE_OF_CUSTOMER_ONE);
+        JsonNode serviceDenied = call(HttpMethod.POST, "/api/v1/tickets/" + anotherTicket + "/evaluation",
+                serviceToken, Map.of("score", 5), 403);
+        assertThat(serviceDenied.path("code").asInt()).isEqualTo(1101);
+    }
+
+    @Test
     @DisplayName("内部备注仅员工可见，客户评论强制为公开")
     void internalCommentsAreHiddenFromCustomer() throws Exception {
         String serviceToken = login("service01", PASSWORD);

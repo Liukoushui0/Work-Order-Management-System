@@ -8,16 +8,18 @@
 | 层次 | 用例数 | 结果 |
 | --- | --- | --- |
 | 后端单元测试（Surefire，不依赖外部服务） | 98 | 全部通过 |
-| 后端集成测试（Failsafe，真实 MySQL + Redis） | 64 | 全部通过 |
+| 后端集成测试（Failsafe，真实 MySQL + Redis） | 65 | 全部通过 |
 | 前端组件与路由测试（Vitest + Vue Test Utils） | 25 | 全部通过 |
-| **合计** | **187** | **全部通过** |
+| **合计** | **188** | **全部通过** |
+
+> 说明：最终交付前补充了一次检查，发现角色权限脚本与实库不一致（管理员缺少 `ticket:evaluate`），修复后新增 1 个回归用例 `adminCanEvaluateOnBehalfOfCustomer`，因此集成测试由 64 增至 65。
 
 ## 2. 命令与结果
 
 | 命令 | 覆盖范围 | 结果 |
 | --- | --- | --- |
 | `mvn clean test` | 后端单元测试 | `Tests run: 98, Failures: 0, Errors: 0` — BUILD SUCCESS |
-| `mvn clean verify` | 单元 + 集成测试 | 单元 98 + 集成 64 全部通过；BUILD SUCCESS |
+| `mvn clean verify` | 单元 + 集成测试 | 单元 98 + 集成 65 全部通过；BUILD SUCCESS |
 | `mvn clean package` | 打包 | 产出 `serviceflow-backend-1.0.0-SNAPSHOT.jar` |
 | `npm run lint` | 前端规范（`--max-warnings 0`） | 退出码 0 |
 | `npm run test` | 前端单元测试 | `Test Files 7 passed / Tests 25 passed` |
@@ -55,7 +57,7 @@
 | `AuthIntegrationTest` | 13 | 登录成功/失败、锁定、禁用、参数校验、未登录 401、伪造令牌、客户与工程师权限边界、退出登录令牌失效、修改密码、刷新令牌轮换 |
 | `CustomerDeviceIntegrationTest` | 11 | 客户与设备 CRUD、编号与序列号唯一、关联完整性、筛选、客户数据隔离、角色限制、参数校验、停用与删除保护、有工单设备不可删 |
 | `TicketWorkflowIntegrationTest` | 13 | 完整主流程与历史留痕、非法跳转、并发接单、并发建单编号唯一、跨角色隔离、权限限制、非负责人接单、逾期查询、取消后操作、转派后重新接单、退回、管理员视图、退回重做 |
-| `TicketFeedbackIntegrationTest` | 8 | 评价条件与唯一性、评价权限、匿名隐藏、内部备注可见性、附件上传下载与 SHA-256、类型与大小限制（配置驱动）、附件权限与 ID 不匹配、附件删除权限与物理文件清理 |
+| `TicketFeedbackIntegrationTest` | 9 | 评价条件与唯一性、评价权限、匿名隐藏、管理员代评与客服无权限、内部备注可见性、附件上传下载与 SHA-256、类型与大小限制（配置驱动）、附件权限与 ID 不匹配、附件删除权限与物理文件清理 |
 | `DashboardIntegrationTest` | 9 | 总览与数据库比对、工程师范围、客户拒绝、分布一致性、工作量一致性、满意度真实性、缓存命中与写后失效、趋势区间、超期自动确认 |
 | `UserManagementIntegrationTest` | 8 | 新增用户与登录、账号重复、禁用后登录、不能禁用自己、角色变更即时生效、重置密码、操作审计、失败审计脱敏 |
 | `HealthIntegrationTest` | 2 | 健康检查（含依赖探测）与未知路径统一 404 |

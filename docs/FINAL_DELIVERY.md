@@ -36,7 +36,7 @@
 
 **数据库**：17 张表（`sys_user`、`sys_role`、`sys_user_role`、`sys_permission`、`sys_role_permission`、`fault_category`、`sys_config`、`customer`、`device`、`service_ticket`、`ticket_assignment`、`ticket_process_record`、`ticket_comment`、`ticket_evaluation`、`ticket_attachment`、`sys_operation_log`、`ticket_sequence`），结构与索引设计见 [DATABASE_DESIGN.md](DATABASE_DESIGN.md)。
 
-**主要 API**（统一前缀 `/api/v1`，共 13 个控制器、57 个端点）：
+**主要 API**（统一前缀 `/api/v1`，共 14 个控制器、67 个端点）：
 
 | 模块 | 端点示例 |
 | --- | --- |
@@ -54,7 +54,7 @@
 | 命令 | 结果 |
 | --- | --- |
 | `mvn clean test` | 98 个单元测试全部通过（不依赖数据库） |
-| `mvn clean verify` | 单元 98 + 集成 64 = **162 个测试全部通过**，BUILD SUCCESS |
+| `mvn clean verify` | 单元 98 + 集成 65 = **163 个测试全部通过**，BUILD SUCCESS |
 | `mvn clean package` | BUILD SUCCESS，产出可执行 jar |
 | `npm run lint` | 退出码 0（`--max-warnings 0`） |
 | `npm run test` | **25 个前端测试全部通过**（7 个测试文件） |
@@ -149,6 +149,6 @@ cd "E:\Work Order Management System\frontend"; npm install; npm run dev
 
 ## 11. 交付结论
 
-项目的全部 12 个后端模块、13 个前端页面与 3 份脚本（结构/基础数据/演示数据）已实现并通过验收：后端 162 个自动化测试、前端 25 个测试全部通过，打包产物完成真实端到端验收，权限、状态机、事务、并发、缓存、安全（敏感配置、日志脱敏、文件访问、SQL 注入）均经检查。
+项目的全部 12 个后端模块、13 个前端页面与 3 份脚本（结构/基础数据/演示数据）已实现并通过验收：后端 163 个自动化测试、前端 25 个测试全部通过，打包产物完成真实端到端验收，权限、状态机、事务、并发、缓存、安全（敏感配置、日志脱敏、文件访问、SQL 注入）均经检查。
 
 唯一未完成项是 **GitHub 远程的最后一段推送（K1）**，属网络环境限制，本地提交完整保留，恢复代理后即可补齐；其余 K2~K8 为可选优化或已记录的取舍，不影响系统功能与可运行性。

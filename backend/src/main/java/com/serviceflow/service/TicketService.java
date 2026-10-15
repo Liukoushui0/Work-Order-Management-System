@@ -840,6 +840,14 @@ public class TicketService {
                 sysUserMapper::selectBatchIds, SysUser::getId);
         Map<Long, FaultCategory> categories = loadMap(idsOf(tickets, ServiceTicket::getFaultCategoryId),
                 faultCategoryMapper::selectBatchIds, FaultCategory::getId);
+        Map<Long, TicketEvaluation> evaluations = new LinkedHashMap<>();
+        List<Long> ticketIds = tickets.stream().map(ServiceTicket::getId).toList();
+        if (!ticketIds.isEmpty()) {
+            for (TicketEvaluation evaluation : evaluationMapper.selectList(
+                    Wrappers.<TicketEvaluation>lambdaQuery().in(TicketEvaluation::getTicketId, ticketIds))) {
+                evaluations.put(evaluation.getTicketId(), evaluation);
+            }
+        }
         return tickets.stream().map(ticket -> {
             Customer customer = ticket.getCustomerId() == null ? null : customers.get(ticket.getCustomerId());
             Device device = ticket.getDeviceId() == null ? null : devices.get(ticket.getDeviceId());
@@ -847,12 +855,18 @@ public class TicketService {
             SysUser user = ticket.getAssigneeId() == null ? null : users.get(ticket.getAssigneeId());
             FaultCategory category = ticket.getFaultCategoryId() == null
                     ? null : categories.get(ticket.getFaultCategoryId());
-            return TicketVO.from(ticket,
+            TicketVO vo = TicketVO.from(ticket,
                     customer == null ? null : customer.getCustomerName(),
                     device == null ? null : device.getDeviceName(),
                     device == null ? null : device.getDeviceCode(),
                     category == null ? null : category.getCategoryName(),
                     user == null ? null : user.getRealName());
+            TicketEvaluation evaluation = evaluations.get(ticket.getId());
+            if (evaluation != null) {
+                vo.setEvaluationScore(evaluation.getScore());
+                vo.setEvaluationSatisfaction(evaluation.getSatisfaction());
+            }
+            return vo;
         }).toList();
     }
 

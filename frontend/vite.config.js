@@ -20,10 +20,24 @@ export default defineConfig({
       }
     }
   },
+  build: {
+    // 按依赖拆分产出，配合路由懒加载让 ECharts 只进入图表页面的分包
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          vue: ['vue', 'vue-router', 'pinia'],
+          'element-plus': ['element-plus', '@element-plus/icons-vue'],
+          echarts: ['echarts']
+        }
+      }
+    },
+    chunkSizeWarningLimit: 800
+  },
   test: {
     environment: 'jsdom',
     globals: true,
     include: ['src/**/*.spec.js'],
+    setupFiles: ['src/test/setup.js'],
     clearMocks: true
   }
 })

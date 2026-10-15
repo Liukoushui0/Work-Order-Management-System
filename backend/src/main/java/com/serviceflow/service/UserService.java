@@ -87,6 +87,25 @@ public class UserService {
         return UserVO.from(user, rolesOf(id));
     }
 
+    /**
+     * 按角色查询启用状态的用户，供工单分派/转派下拉使用（只返回必要字段）。
+     */
+    @Transactional(readOnly = true)
+    public List<UserVO> optionsByRole(String roleCode) {
+        List<Long> userIds = sysUserRoleMapper.selectUserIdsByRoleCode(roleCode);
+        if (userIds.isEmpty()) {
+            return List.of();
+        }
+        return sysUserMapper.selectList(Wrappers.<SysUser>lambdaQuery()
+                        .in(SysUser::getId, userIds)
+                        .eq(SysUser::getStatus, 1)
+                        .eq(SysUser::getDeleted, 0L)
+                        .orderByAsc(SysUser::getRealName))
+                .stream()
+                .map(user -> UserVO.from(user, null))
+                .toList();
+    }
+
     @Transactional(rollbackFor = Exception.class)
     public UserVO create(UserCreateRequest request) {
         Long duplicate = sysUserMapper.selectCount(Wrappers.<SysUser>lambdaQuery()

@@ -574,6 +574,14 @@ PENDING_ASSIGN --分派--> PENDING_ACCEPT --接单--> PROCESSING --提交处理-
 - `dict` store：故障分类、状态、优先级等字典（来自后端配置/字典接口）。
 - 路由守卫：未登录跳转登录页；无权限跳转 403/404；登录后按角色重定向默认页。
 
+### 11.4 实现说明（Stage 7 落地）
+
+- **字典来源**：状态、优先级、满意度等枚举的前端展示映射集中在 `src/utils/format.js`，与后端枚举逐项对应；故障分类等业务字典来自后端接口。
+- **菜单与守卫**：`src/router/index.js` 的 `buildMenus` 按 `meta.roles` 过滤侧边栏；`beforeEach` 守卫负责未登录跳转、用户信息懒加载与无权限跳转 `/403`。前端不做安全兜底，后端仍执行接口级、资源级与数据域三重校验。
+- **图表**：`BaseChart.vue` 封装 ECharts 实例与自适应，数据全部来自统计接口，无硬编码数字。
+- **构建产物**：通过 `build.rollupOptions.output.manualChunks` 把 vue、Element Plus、ECharts 拆为独立分包，配合路由懒加载；主包由 1.1MB 降至 51KB（gzip 21KB），ECharts 仅随图表页面加载。Element Plus 目前为全量引入（独立分包，gzip 约 330KB），如需进一步减小可改为按需引入。
+- **测试**：Vitest + Vue Test Utils 覆盖组件渲染、表单校验、接口异常反馈、菜单/路由权限配置与核心交互；Element Plus 图标在 `src/test/setup.js` 中全局注册，避免用例出现组件解析告警。
+
 ---
 
 ## 12. 测试设计

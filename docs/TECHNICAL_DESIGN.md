@@ -233,7 +233,7 @@ Work Order Management System/
 | 15 | `ticket_attachment` | 附件表 | 工单附件元数据 |
 | 16 | `sys_operation_log` | 操作日志表 | 审计日志 |
 
-> 需求要求"至少"包含 11 张指定表，上表 16 张为其超集，新增表均为实现需求中明确功能（权限管理、故障分类、系统配置、客户评价）所必需。
+> 需求要求"至少"包含 11 张指定表，实际落地 17 张（含 `sys_permission`、`sys_role_permission`、`fault_category`、`sys_config`、`ticket_evaluation`、`ticket_sequence`），新增表均为实现需求中明确功能所必需。
 
 ### 4.3 关键表结构（节选，完整 DDL 于 Stage 2 落地为 `db/schema.sql`）
 

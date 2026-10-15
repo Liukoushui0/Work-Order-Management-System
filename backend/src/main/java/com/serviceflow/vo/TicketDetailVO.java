@@ -42,4 +42,13 @@ public class TicketDetailVO {
 
     @Schema(description = "处理历史（按时间正序）")
     private List<TicketRecordVO> records;
+
+    @Schema(description = "服务评价（未评价时为 null）")
+    private EvaluationVO evaluation;
+
+    @Schema(description = "附件数量")
+    private Long attachmentCount;
+
+    @Schema(description = "评论数量（含内部备注，仅员工可见的按角色过滤）")
+    private Long commentCount;
 }

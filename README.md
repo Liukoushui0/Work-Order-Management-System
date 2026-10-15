@@ -2,7 +2,7 @@
 
 ServiceFlow（Work Order Management System）是一个面向销售设备、智能硬件或软件产品企业售后团队的工单管理系统，覆盖客户报修、客服建单、工单派发、维修处理、服务评价与运营分析。
 
-> 当前进度：**Stage 4（工单核心业务）已完成** —— 已落地 17 张业务表、四角色 RBAC、JWT 认证、操作审计、客户与设备档案、工单全生命周期（创建/分派/接单/转派/退回/处理/提交/确认/重开/取消，含状态机、处理历史与并发保护），并通过 73 个单元测试与 47 个集成测试。完整功能按 `docs/DEVELOPMENT_PLAN.md` 的阶段划分推进，README 随阶段持续补充。
+> 当前进度：**Stage 5（评价、附件与操作记录）已完成** —— 已落地 17 张业务表、四角色 RBAC、JWT 认证、操作审计、客户与设备档案、工单全生命周期、客户评价与工单附件（含文件安全检查），并通过 84 个单元测试与 55 个集成测试。完整功能按 `docs/DEVELOPMENT_PLAN.md` 的阶段划分推进，README 随阶段持续补充。
 
 ## 技术栈
 
@@ -139,6 +139,8 @@ npm run build
 ```
 
 ## 已知环境说明
+
+- **附件存储目录**：默认 `backend/storage/attachments`（可通过环境变量 `APP_UPLOAD_DIR` 修改），已在 `.gitignore` 中排除，不会进入版本库；上传扩展名与大小上限由 `sys_config` 的 `attachment.allowed_extensions`、`attachment.max_size_mb` 控制。
 
 - **Redis 版本**：需求文档声明 Redis 7，本机实际使用 Windows 版 5.0.14.1（Windows 无官方 Redis 7），系统仅使用 5.0 已支持的命令，功能不受影响。
 - **npm 缓存目录**：本机全局缓存目录 `D:\Tools\envs\Nodejs-v24.21.0\node_cache` 对当前用户只读，直接执行 `npm install` 会报 `EPERM`。临时规避方式是指定项目内缓存：

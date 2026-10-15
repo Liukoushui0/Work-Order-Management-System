@@ -66,6 +66,19 @@ public abstract class BaseIntegrationTest {
         // 清理集成测试产生的当日工单（演示工单使用 SO20260101 前缀，不受影响）
         String todayTicketPredicate =
                 "ticket_id IN (SELECT id FROM service_ticket WHERE ticket_no LIKE CONCAT('SO', DATE_FORMAT(NOW(), '%Y%m%d'), '%'))";
+        // 先清理附件：同步删除物理文件，再删除元数据与评价、评论
+        for (String relativePath : jdbcTemplate.queryForList(
+                "SELECT file_path FROM ticket_attachment WHERE " + todayTicketPredicate, String.class)) {
+            try {
+                java.nio.file.Files.deleteIfExists(java.nio.file.Paths.get("storage/attachments")
+                        .toAbsolutePath().normalize().resolve(relativePath).normalize());
+            } catch (Exception ex) {
+                // 清理失败不影响测试结论
+            }
+        }
+        jdbcTemplate.update("DELETE FROM ticket_attachment WHERE " + todayTicketPredicate);
+        jdbcTemplate.update("DELETE FROM ticket_evaluation WHERE " + todayTicketPredicate);
+        jdbcTemplate.update("DELETE FROM ticket_comment WHERE " + todayTicketPredicate);
         jdbcTemplate.update("DELETE FROM ticket_process_record WHERE " + todayTicketPredicate);
         jdbcTemplate.update("DELETE FROM ticket_assignment WHERE " + todayTicketPredicate);
         jdbcTemplate.update("DELETE FROM service_ticket WHERE ticket_no LIKE CONCAT('SO', DATE_FORMAT(NOW(), '%Y%m%d'), '%')");

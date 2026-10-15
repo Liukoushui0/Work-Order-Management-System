@@ -14,7 +14,7 @@
 | 数据库 | 17 张表（工单、分派、处理记录、评论、评价、附件、审计、用户/角色/权限、故障分类、配置、序列表） |
 | 接口 | 14 个控制器 / 67 个 REST 端点，统一 `/api/v1` 前缀与统一响应结构 |
 | 测试 | 后端 163（98 单元 + 65 集成，集成测试连接真实 MySQL 与 Redis）；前端 25 |
-| 提交 | 53 个 Conventional Commits（分阶段 feature 分支 + `--no-ff` 合并） |
+| 提交 | 54 个 Conventional Commits（feat 13 / docs 19 / test 6 / fix 5 / build 2 / style 1 / chore 1 / merge 7，分阶段 feature 分支 + `--no-ff` 合并） |
 | 文档 | 11 份（开发计划、技术设计、数据库设计、API、部署排查、测试报告、验收与安全审查、简历素材等） |
 
 开发过程严格按阶段推进，每阶段"开发 → 测试 → 审查 → 提交 → 合并 → 双远程同步 → 汇报"，进度与验收记录见 [docs/DEVELOPMENT_PLAN.md](docs/DEVELOPMENT_PLAN.md)。

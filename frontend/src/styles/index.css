@@ -1,0 +1,47 @@
+:root {
+  --sf-primary: #2b6cff;
+  --sf-primary-light: #eaf1ff;
+  --sf-bg-color: #f5f7fb;
+  --sf-border-color: #e6e8ee;
+  --sf-text-primary: #1f2430;
+  --sf-text-secondary: #6b7280;
+  --sf-radius: 8px;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#app {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family:
+    'Helvetica Neue', Helvetica, 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', Arial,
+    sans-serif;
+  color: var(--sf-text-primary);
+  background-color: var(--sf-bg-color);
+  -webkit-font-smoothing: antialiased;
+}
+
+.el-card {
+  border-radius: var(--sf-radius);
+  border-color: var(--sf-border-color);
+}
+
+.el-button--primary {
+  --el-button-bg-color: var(--sf-primary);
+  --el-button-border-color: var(--sf-primary);
+  --el-button-hover-bg-color: #4a83ff;
+  --el-button-hover-border-color: #4a83ff;
+}
+
+.el-menu-item.is-active {
+  background-color: var(--sf-primary-light);
+  color: var(--sf-primary);
+}

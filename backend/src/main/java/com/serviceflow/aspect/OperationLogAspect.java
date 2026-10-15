@@ -1,6 +1,7 @@
 package com.serviceflow.aspect;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.serviceflow.common.api.Result;
 import com.serviceflow.common.util.RequestUtils;
 import com.serviceflow.entity.SysOperationLog;
@@ -79,7 +80,8 @@ public class OperationLogAspect {
             entity.setUserId(principal.getUserId());
             entity.setUsername(principal.getUsername());
         } catch (Exception ignored) {
-            // 匿名接口（如登录）没有主体，保持为空
+            // 匿名接口（如登录）没有主体：从请求参数中提取账号，保证审计可追溯
+            entity.setUsername(resolveAnonymousUsername(args));
         }
         if (request != null) {
             entity.setRequestMethod(request.getMethod());
@@ -132,6 +134,31 @@ public class OperationLogAspect {
             masked = masked.replaceAll("(?i)(\"" + keyword + "[^\"]*\"\\s*:\\s*)\"[^\"]*\"", "$1\"***\"");
         }
         return masked;
+    }
+
+    /**
+     * 匿名的登录类请求没有认证主体，从请求参数中提取 username 字段写入审计日志，
+     * 便于事后追溯"是谁在尝试登录"。
+     */
+    private String resolveAnonymousUsername(Object[] args) {
+        if (args == null) {
+            return null;
+        }
+        for (Object arg : args) {
+            if (arg == null || isInfrastructureArg(arg)) {
+                continue;
+            }
+            try {
+                JsonNode node = objectMapper.valueToTree(arg);
+                JsonNode username = node.get("username");
+                if (username != null && username.isTextual() && !username.asText().isBlank()) {
+                    return username.asText();
+                }
+            } catch (Exception ignored) {
+                // 无法解析时忽略，保持审计记录的其他字段可用
+            }
+        }
+        return null;
     }
 
     private String truncate(String value, int maxLength) {

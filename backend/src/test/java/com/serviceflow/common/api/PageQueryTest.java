@@ -3,8 +3,6 @@ package com.serviceflow.common.api;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
-import java.util.Set;
-
 import static org.assertj.core.api.Assertions.assertThat;
 
 class PageQueryTest {
@@ -22,16 +20,19 @@ class PageQueryTest {
     @Test
     @DisplayName("排序字段白名单校验可拦截非法字段")
     void shouldValidateSortFieldWhitelist() {
-        PageQuery query = new PageQuery();
-        Set<String> allowed = Set.of("createTime", "priority");
+        UserQueryLike query = new UserQueryLike();
 
-        assertThat(query.isSortFieldAllowed(allowed)).isTrue();
+        assertThat(query.isSortFieldAllowed()).isTrue();
 
         query.setSortField("create_time; drop table sys_user");
-        assertThat(query.isSortFieldAllowed(allowed)).isFalse();
+        assertThat(query.isSortFieldAllowed()).isFalse();
 
         query.setSortField("priority");
-        assertThat(query.isSortFieldAllowed(allowed)).isTrue();
+        assertThat(query.isSortFieldAllowed()).isFalse();
+
+        query.setSortField("createTime");
+        assertThat(query.isSortFieldAllowed()).isTrue();
+        assertThat(query.resolvedSortColumn("id")).isEqualTo("create_time");
     }
 
     @Test
@@ -44,5 +45,13 @@ class PageQueryTest {
 
         query.setSortOrder("drop table");
         assertThat(query.normalizedSortOrder()).isEqualTo("desc");
+    }
+
+    /** 测试用子类：只允许按 createTime 排序。 */
+    private static class UserQueryLike extends PageQuery {
+        @Override
+        public java.util.Set<String> allowedSortFields() {
+            return java.util.Set.of("createTime");
+        }
     }
 }

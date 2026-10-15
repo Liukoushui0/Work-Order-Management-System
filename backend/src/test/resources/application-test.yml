@@ -1,7 +1,8 @@
 spring:
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
-    url: jdbc:mysql://${DB_HOST:127.0.0.1}:${DB_PORT:3306}/${DB_NAME:serviceflow}?useUnicode=true&characterEncoding=utf8&serverTimezone=Asia/Shanghai&useSSL=false&allowPublicKeyRetrieval=true
+    # 测试库与开发库分离，避免集成测试污染开发数据
+    url: jdbc:mysql://${DB_HOST:127.0.0.1}:${DB_PORT:3306}/${DB_NAME:serviceflow_test}?useUnicode=true&characterEncoding=utf8&serverTimezone=Asia/Shanghai&useSSL=false&allowPublicKeyRetrieval=true
     username: ${DB_USERNAME:root}
     password: ${DB_PASSWORD:}
   data:
@@ -15,3 +16,9 @@ logging:
   level:
     root: warn
     com.serviceflow: info
+
+app:
+  jwt:
+    issuer: serviceflow-test
+    # 仅用于自动化测试，生产环境必须通过 JWT_SECRET 环境变量注入真实密钥
+    secret: serviceflow-integration-test-only-secret-key-32bytes

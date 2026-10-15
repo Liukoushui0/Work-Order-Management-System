@@ -12,6 +12,8 @@ const authStore = useAuthStore()
 const formRef = ref(null)
 const submitting = ref(false)
 const errorMessage = ref('')
+/** 演示账号仅在开发环境或显式开启时展示，避免生产构建暴露本地开发账号 */
+const demoEnabled = import.meta.env.DEV || import.meta.env.VITE_ENABLE_DEMO_ACCOUNTS === 'true'
 
 const form = reactive({
   username: '',
@@ -104,8 +106,8 @@ async function submit() {
           </el-button>
         </el-form>
 
-        <el-divider>本地开发演示账号（密码 Serviceflow@2026）</el-divider>
-        <div class="login-card__demo">
+        <el-divider v-if="demoEnabled">本地开发演示账号（密码 Serviceflow@2026）</el-divider>
+        <div v-if="demoEnabled" class="login-card__demo">
           <el-button v-for="account in demoAccounts" :key="account.username" size="small"
                      @click="useDemoAccount(account)">
             {{ account.label }}

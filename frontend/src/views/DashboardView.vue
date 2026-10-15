@@ -185,6 +185,7 @@ onMounted(loadAll)
 
     <div class="stat-grid">
       <el-card v-for="card in statCards" :key="card.label" shadow="never" class="stat-card">
+        <span class="stat-card__accent" :style="{ background: card.color }" />
         <div class="stat-card__body">
           <el-icon :style="{ background: `${card.color}1a`, color: card.color }" class="stat-card__icon">
             <component :is="card.icon" />
@@ -270,6 +271,16 @@ onMounted(loadAll)
   display: flex;
   align-items: center;
   gap: 14px;
+  padding-left: 6px;
+}
+
+.stat-card__accent {
+  position: absolute;
+  left: 0;
+  top: 12px;
+  bottom: 12px;
+  width: 4px;
+  border-radius: 0 4px 4px 0;
 }
 
 .stat-card__icon {

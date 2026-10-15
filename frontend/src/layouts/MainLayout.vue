@@ -51,7 +51,7 @@ onMounted(() => {
 
 <template>
   <el-container class="app-shell">
-    <el-aside :width="collapsed ? '64px' : '220px'" class="app-aside">
+    <el-aside :width="collapsed ? '68px' : '228px'" class="app-aside">
       <div class="app-brand">
         <span class="app-brand__mark">SF</span>
         <span v-show="!collapsed" class="app-brand__text">ServiceFlow</span>
@@ -103,65 +103,85 @@ onMounted(() => {
 <style scoped>
 .app-shell {
   min-height: 100vh;
+  background: var(--sf-bg-color);
 }
 
 .app-aside {
   background: #ffffff;
   border-right: 1px solid var(--sf-border-color);
-  transition: width 0.2s;
+  transition: width 0.2s ease;
 }
 
 .app-brand {
-  height: 60px;
+  height: 64px;
   display: flex;
   align-items: center;
   gap: 10px;
-  padding: 0 16px;
-  border-bottom: 1px solid var(--sf-border-color);
+  padding: 0 18px;
+  background: linear-gradient(135deg, #2b6cff 0%, #1c4fd6 100%);
+  color: #fff;
 }
 
 .app-brand__mark {
-  width: 32px;
-  height: 32px;
-  border-radius: 8px;
-  background: var(--sf-primary);
-  color: #fff;
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.2);
   font-weight: 700;
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: 14px;
+  flex-shrink: 0;
 }
 
 .app-brand__text {
   font-size: 17px;
   font-weight: 600;
-  color: var(--sf-primary);
-  letter-spacing: 0.5px;
+  letter-spacing: 0.6px;
+  white-space: nowrap;
 }
 
 .app-menu {
   border-right: none;
+  padding: 8px 0;
+}
+
+.app-menu:not(.el-menu--collapse) {
+  width: 100%;
 }
 
 .app-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  height: 64px;
   background: #ffffff;
   border-bottom: 1px solid var(--sf-border-color);
+  box-shadow: 0 1px 2px rgba(16, 24, 40, 0.03);
+  position: sticky;
+  top: 0;
+  z-index: 10;
 }
 
 .app-header__left {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 14px;
 }
 
 .app-header__toggle {
   cursor: pointer;
   font-size: 18px;
   color: var(--sf-text-secondary);
+  padding: 6px;
+  border-radius: 8px;
+  transition: all 0.2s;
+}
+
+.app-header__toggle:hover {
+  background: var(--sf-primary-light);
+  color: var(--sf-primary);
 }
 
 .app-header__title {
@@ -177,24 +197,50 @@ onMounted(() => {
 }
 
 .app-header__role {
-  font-size: 13px;
-  color: var(--sf-text-secondary);
+  font-size: 12px;
+  color: var(--sf-primary);
+  background: var(--sf-primary-light);
+  padding: 4px 10px;
+  border-radius: 999px;
+  white-space: nowrap;
 }
 
 .app-header__user {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 8px;
   font-size: 14px;
+  font-weight: 500;
   color: var(--sf-text-primary);
   cursor: pointer;
+  padding: 6px 12px 6px 8px;
+  border-radius: 999px;
+  background: #f7f8fc;
+  border: 1px solid var(--sf-border-color);
+  transition: all 0.2s;
+}
+
+.app-header__user:hover {
+  border-color: var(--sf-primary);
+  color: var(--sf-primary);
 }
 
 .app-main {
   background: var(--sf-bg-color);
+  padding: 20px 24px 28px;
 }
 
 .app-breadcrumb {
   margin-bottom: 16px;
+  font-size: 13px;
+}
+
+.app-breadcrumb :deep(.el-breadcrumb__inner) {
+  color: var(--sf-text-secondary);
+}
+
+.app-breadcrumb :deep(.el-breadcrumb__item:last-child .el-breadcrumb__inner) {
+  color: var(--sf-text-primary);
+  font-weight: 600;
 }
 </style>

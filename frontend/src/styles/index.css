@@ -1,11 +1,40 @@
+/* ============================================================
+   ServiceFlow 设计系统：现代蓝白企业 SaaS 风格
+   - 颜色、圆角、阴影、间距统一通过 CSS 变量管理
+   - 组件层统一 Element Plus 的观感，页面层只写业务样式
+   ============================================================ */
+
 :root {
+  /* 主色阶 */
   --sf-primary: #2b6cff;
+  --sf-primary-dark: #1c4fd6;
   --sf-primary-light: #eaf1ff;
-  --sf-bg-color: #f5f7fb;
-  --sf-border-color: #e6e8ee;
-  --sf-text-primary: #1f2430;
+  --sf-primary-lighter: #f5f8ff;
+  --sf-success: #12b76a;
+  --sf-warning: #f79009;
+  --sf-danger: #f04438;
+  --sf-info: #667085;
+
+  /* 中性色 */
+  --sf-bg-color: #f4f6fb;
+  --sf-card-bg: #ffffff;
+  --sf-border-color: #e7eaf3;
+  --sf-border-strong: #d8dde9;
+  --sf-text-primary: #1d2433;
   --sf-text-secondary: #6b7280;
-  --sf-radius: 8px;
+  --sf-text-placeholder: #9aa1b1;
+
+  /* 形状与阴影 */
+  --sf-radius-sm: 6px;
+  --sf-radius: 10px;
+  --sf-radius-lg: 14px;
+  --sf-shadow-card: 0 1px 2px rgba(16, 24, 40, 0.04), 0 1px 3px rgba(16, 24, 40, 0.06);
+  --sf-shadow-hover: 0 6px 18px rgba(43, 108, 255, 0.12);
+
+  /* Element Plus 变量对齐 */
+  --el-color-primary: #2b6cff;
+  --el-border-radius-base: 8px;
+  --el-font-size-base: 14px;
 }
 
 * {
@@ -29,9 +58,47 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
+/* ---------- 滚动条 ---------- */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #d3d9e6;
+  border-radius: 8px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #b9c2d4;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+/* ---------- 卡片 ---------- */
 .el-card {
-  border-radius: var(--sf-radius);
-  border-color: var(--sf-border-color);
+  border-radius: var(--sf-radius-lg);
+  border: 1px solid var(--sf-border-color);
+  box-shadow: var(--sf-shadow-card);
+  transition: box-shadow 0.2s ease, transform 0.2s ease;
+}
+
+.el-card__header {
+  padding: 14px 18px;
+  border-bottom: 1px solid var(--sf-border-color);
+  font-weight: 600;
+  color: var(--sf-text-primary);
+}
+
+.el-card__body {
+  padding: 18px;
+}
+
+/* ---------- 按钮 ---------- */
+.el-button {
+  font-weight: 500;
 }
 
 .el-button--primary {
@@ -39,9 +106,140 @@ body {
   --el-button-border-color: var(--sf-primary);
   --el-button-hover-bg-color: #4a83ff;
   --el-button-hover-border-color: #4a83ff;
+  --el-button-active-bg-color: var(--sf-primary-dark);
+  --el-button-active-border-color: var(--sf-primary-dark);
+  box-shadow: 0 1px 2px rgba(43, 108, 255, 0.18);
+}
+
+/* ---------- 表格 ---------- */
+.el-table {
+  --el-table-border-color: var(--sf-border-color);
+  --el-table-header-bg-color: #fafbff;
+  --el-table-header-text-color: #4b5565;
+  --el-table-row-hover-bg-color: var(--sf-primary-lighter);
+  font-size: 13px;
+}
+
+.el-table th.el-table__cell {
+  font-weight: 600;
+}
+
+.el-table .el-table__cell {
+  padding: 10px 0;
+}
+
+/* ---------- 表单与筛选区 ---------- */
+.el-input__wrapper,
+.el-select__wrapper,
+.el-textarea__inner {
+  border-radius: 8px;
+}
+
+.el-form-item__label {
+  color: #4b5565;
+  font-weight: 500;
+}
+
+/* ---------- 标签 ---------- */
+.el-tag {
+  border-radius: 6px;
+  font-weight: 500;
+}
+
+/* ---------- 菜单 ---------- */
+.el-menu-item {
+  border-radius: 8px;
+  margin: 4px 8px;
+  height: 42px;
+  line-height: 42px;
+  font-weight: 500;
 }
 
 .el-menu-item.is-active {
-  background-color: var(--sf-primary-light);
+  background: linear-gradient(90deg, var(--sf-primary-light) 0%, #f2f7ff 100%);
   color: var(--sf-primary);
+  font-weight: 600;
+}
+
+.el-menu-item.is-active::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 8px;
+  bottom: 8px;
+  width: 3px;
+  border-radius: 0 3px 3px 0;
+  background: var(--sf-primary);
+}
+
+/* ---------- 描述列表 ---------- */
+.el-descriptions__label {
+  color: #4b5565;
+  font-weight: 500;
+}
+
+/* ---------- 时间线 ---------- */
+.el-timeline-item__node {
+  background: var(--sf-primary);
+}
+
+/* ---------- 页面通用结构 ---------- */
+.page {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.page-card-header,
+.card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.pagination {
+  margin-top: 16px;
+  justify-content: flex-end;
+}
+
+.muted {
+  color: var(--sf-text-secondary);
+  font-size: 13px;
+}
+
+.hint {
+  font-size: 12px;
+  color: var(--sf-text-secondary);
+}
+
+/* 内容区进入动画，让页面切换更柔和 */
+.app-main .page,
+.app-main > .el-card,
+.app-main > .el-row {
+  animation: sf-fade-in 0.22s ease-out;
+}
+
+@keyframes sf-fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* 统计卡片统一悬浮效果 */
+.stat-card {
+  position: relative;
+  overflow: hidden;
+}
+
+.stat-card:hover {
+  box-shadow: var(--sf-shadow-hover);
+  transform: translateY(-2px);
 }

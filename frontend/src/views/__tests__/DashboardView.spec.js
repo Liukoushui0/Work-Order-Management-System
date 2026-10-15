@@ -1,79 +1,106 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { enableAutoUnmount, flushPromises, mount } from '@vue/test-utils'
 import ElementPlus from 'element-plus'
+import { createPinia, setActivePinia } from 'pinia'
 
 import DashboardView from '@/views/DashboardView.vue'
-import { fetchHealth } from '@/api/health'
+import {
+  fetchEngineerWorkload,
+  fetchFaultDistribution,
+  fetchOverview,
+  fetchPriorityDistribution,
+  fetchSatisfaction,
+  fetchTrend
+} from '@/api/dashboard'
 
-// Element Plus 组件挂载/卸载依赖真实 DOM 生命周期，自动卸载可避免用例之间互相污染
 enableAutoUnmount(afterEach)
 
-vi.mock('@/api/health', () => ({
-  fetchHealth: vi.fn()
-}))
+vi.mock('element-plus', async importOriginal => {
+  const actual = await importOriginal()
+  return { ...actual, ElMessage: { success: vi.fn(), error: vi.fn(), warning: vi.fn() } }
+})
 
-const mockedFetchHealth = vi.mocked(fetchHealth)
+vi.mock('@/api/dashboard', () => ({
+  fetchOverview: vi.fn(),
+  fetchTrend: vi.fn(),
+  fetchFaultDistribution: vi.fn(),
+  fetchPriorityDistribution: vi.fn(),
+  fetchEngineerWorkload: vi.fn(),
+  fetchSatisfaction: vi.fn()
+}))
 
 function mountDashboard() {
   return mount(DashboardView, {
-    // Element Plus 组件在挂载钩子中访问真实 DOM 引用，jsdom 下需 attachTo 才能正常工作
     attachTo: document.body,
     global: {
-      plugins: [ElementPlus]
+      plugins: [ElementPlus],
+      stubs: { BaseChart: { template: '<div class="chart-stub" />' } }
     }
   })
 }
 
 describe('DashboardView', () => {
   beforeEach(() => {
-    mockedFetchHealth.mockReset()
+    setActivePinia(createPinia())
+    vi.mocked(fetchOverview).mockResolvedValue({
+      total: 12,
+      openCount: 5,
+      overdueCount: 2,
+      completedCount: 7,
+      avgHandleHours: 18.5,
+      avgSatisfaction: 4.5,
+      scope: 'ALL',
+      cached: false,
+      statusDistribution: []
+    })
+    vi.mocked(fetchTrend).mockResolvedValue([
+      { period: '2026-10-14', created: 2, completed: 1 },
+      { period: '2026-10-15', created: 3, completed: 2 }
+    ])
+    vi.mocked(fetchFaultDistribution).mockResolvedValue([{ key: '1', name: '硬件故障', value: 6, percent: 50 }])
+    vi.mocked(fetchPriorityDistribution).mockResolvedValue([{ key: 'HIGH', name: '高', value: 4, percent: 33.3 }])
+    vi.mocked(fetchEngineerWorkload).mockResolvedValue([
+      { engineerId: 3, engineerName: '维修工程师一号', total: 3, completed: 2, open: 1, avgHandleHours: 6 }
+    ])
+    vi.mocked(fetchSatisfaction).mockResolvedValue({
+      total: 2,
+      avgScore: 4.5,
+      distribution: [{ key: '5', name: '5 星', value: 1, percent: 50 }]
+    })
   })
 
-  it('渲染后端返回的真实健康状态', async () => {
-    mockedFetchHealth.mockResolvedValue({
-      application: 'serviceflow',
-      status: 'UP',
-      time: '2026-10-15 10:30:00',
-      database: 'UP',
-      redis: 'UP'
-    })
-
+  it('使用后端真实统计渲染指标卡与图表', async () => {
     const wrapper = mountDashboard()
     await flushPromises()
 
-    expect(mockedFetchHealth).toHaveBeenCalledTimes(1)
+    expect(fetchOverview).toHaveBeenCalledTimes(1)
     const text = wrapper.text()
-    expect(text).toContain('serviceflow')
-    expect(text).toContain('MySQL UP')
-    expect(text).toContain('Redis UP')
-    expect(text).toContain('2026-10-15 10:30:00')
+    expect(text).toContain('工单总数')
+    expect(text).toContain('12')
+    expect(text).toContain('18.5 h')
+    expect(text).toContain('4.5 分')
+    expect(wrapper.findAll('.chart-stub').length).toBeGreaterThan(0)
   })
 
-  it('请求失败时展示错误提示而不是假数据', async () => {
-    mockedFetchHealth.mockRejectedValue(new Error('网络异常，无法连接服务器'))
+  it('切换趋势粒度会重新请求趋势接口', async () => {
+    const wrapper = mountDashboard()
+    await flushPromises()
+    vi.mocked(fetchTrend).mockClear()
+
+    const monthlyRadio = wrapper.findAll('.el-radio-button').at(2)
+    await monthlyRadio.trigger('click')
+    await flushPromises()
+
+    expect(fetchTrend).toHaveBeenCalledWith({ granularity: 'MONTH' })
+  })
+
+  it('统计接口失败时展示错误提示而不是假数据', async () => {
+    vi.mocked(fetchOverview).mockRejectedValue(new Error('网络异常，无法连接服务器'))
 
     const wrapper = mountDashboard()
     await flushPromises()
 
     expect(wrapper.text()).toContain('网络异常，无法连接服务器')
-    expect(wrapper.text()).not.toContain('MySQL UP')
-  })
-
-  it('点击刷新按钮会重新请求接口', async () => {
-    mockedFetchHealth.mockResolvedValue({
-      application: 'serviceflow',
-      status: 'UP',
-      time: '2026-10-15 10:30:00',
-      database: 'UP',
-      redis: 'UP'
-    })
-
-    const wrapper = mountDashboard()
-    await flushPromises()
-
-    await wrapper.get('button').trigger('click')
-    await flushPromises()
-
-    expect(mockedFetchHealth).toHaveBeenCalledTimes(2)
+    expect(wrapper.text()).not.toContain('工单总数')
   })
 })

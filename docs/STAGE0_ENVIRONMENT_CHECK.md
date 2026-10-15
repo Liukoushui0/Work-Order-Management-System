@@ -49,7 +49,7 @@
 | 是否存在 JDK 17 | **不存在**（全盘检索仅发现 JetBrains Runtime 25，位于 IDEA/DataGrip/PyCharm 安装目录） |
 | JetBrains Runtime | `D:\Tools\IDEA\IntelliJ IDEA 2026.2.3\jbr`，`JAVA_VERSION="25.0.4"`，含 `javac.exe`（IDE 自带运行时，不建议作为项目 JDK） |
 
-**结论**：**不满足需求（Java 17）**。这是当前最主要的阻塞项，见第 5 节 R1。
+**结论**：**不满足需求（Java 17）**，是当时最主要的阻塞项，见第 5 节 R1。该项已在用户确认后处理完毕，见第 8 节。
 
 ### 3.2 Maven
 
@@ -104,7 +104,7 @@
 | 配置文件 | `redis.windows.conf`：`bind 127.0.0.1`、`port 6379`、无 `requirepass` |
 | WSL 可用性 | 未安装（`wsl --status` 提示需要安装 Linux 发行版） |
 
-**结论**：Redis 未运行且版本低于需求声明；Windows 平台无官方 Redis 7 版本，见第 5 节 R4。
+**结论**：Redis 未运行且版本低于需求声明；Windows 平台无官方 Redis 7 版本，见第 5 节 R4。该项已在用户确认后处理完毕，见第 8 节。
 
 ### 3.6 其他工具
 
@@ -149,11 +149,11 @@
 | 远程 `github` / `gitee` 配置正确且可访问 | 满足（GitHub 需经代理） |
 | 无历史冲突风险 | 满足（双方均为空仓库） |
 | Node.js / npm / MySQL 可用 | 满足 |
-| Java 17 可用 | **不满足（R1）** |
-| MySQL 凭据可用 | **不满足（R3）** |
-| Redis 可用 | **不满足（R4，未运行且版本偏差）** |
+| Java 17 可用 | 已满足（R1 已处理，见第 8 节） |
+| MySQL 凭据可用 | 已满足（R3 已处理，见第 8 节） |
+| Redis 可用 | 已满足（R4 已处理，见第 8 节，版本偏差经用户确认沿用） |
 
-**结论**：Stage 0 的只读检查与文档产出已完成。在 R1、R3、R4 三个阻塞项按用户选择处理之前，不进入 Stage 1 的代码开发；R2、R5~R9 已有明确处理方案，不阻塞后续开发。
+**结论**：Stage 0 的只读检查与文档产出已完成；R1、R3、R4 三个阻塞项在取得用户确认后已全部处理完毕（第 8 节），R2、R5~R9 已有明确处理方案，不阻塞后续开发。项目具备进入 Stage 1 的条件。
 
 ## 7. 本次检查执行的命令（只读）
 
@@ -170,3 +170,51 @@ Resolve-DnsName / netsh winhttp show proxy / Get-ChildItem / Get-Content（配�
 ```
 
 未执行任何写操作类命令：未 `git init`、未添加/删除远程、未 `add`、未 `commit`、未 `push`、未 `fetch` 到本地引用之外的变更、未修改任何环境变量或系统配置。
+
+## 8. 用户确认后的处理结果（Stage 0 收尾）
+
+用户于 2026-10-15 确认了四项决策：(1) 安装 JDK 17 到 `D:\Tools\envs\jdk17`；(2) 提供本地开发库账号 `root` 并确认密码可用；(3) Redis 沿用本机现有版本、无密码；(4) 首次提交按建议执行。据此完成的实际操作如下。
+
+### 8.1 JDK 17（R1 已解决）
+
+| 项 | 结果 |
+| --- | --- |
+| 来源 | 清华大学开源软件镜像（Adoptium 镜像）：`https://mirrors.tuna.tsinghua.edu.cn/Adoptium/17/jdk/x64/windows/` |
+| 文件 | `OpenJDK17U-jdk_x64_windows_hotspot_17.0.20.1_1.zip`（182 MB，下载耗时 32 秒） |
+| 安装目录 | `D:\Tools\envs\jdk17`（新建目录，未覆盖任何既有文件） |
+| 版本 | Temurin 17.0.20.1+1（`javac 17.0.20.1` 可用） |
+| 临时文件 | 下载的 zip 与解压暂存目录已清理 |
+| 全局环境变量 | **未修改**（`JAVA_HOME` 仍指向 JDK 8）；项目构建时通过显式指定 JDK 17 使用 |
+
+验证：`JAVA_HOME=D:\Tools\envs\jdk17` 时执行 `mvn -v`，输出 `Java version: 17.0.20.1, vendor: Eclipse Adoptium, runtime: D:\Tools\envs\jdk17`。
+
+### 8.2 MySQL（R3 已解决）
+
+- 使用用户提供的本地开发账号连接验证成功：`SELECT VERSION(), CURRENT_USER()` 返回 `8.0.46` / `root@localhost`。
+- 当前实例仅存在系统库（`information_schema`、`mysql`、`performance_schema`、`sys`），无既有业务库，建库环境干净。
+- 凭据仅用于本地开发连接，不写入仓库、配置文件或提交信息；应用侧通过环境变量注入。
+
+### 8.3 Redis（R4 已按用户选定方案处理）
+
+- 用户选择"沿用现有 5.0.14.1、无密码"。
+- 已以隐藏窗口方式启动 `D:\Tools\Redis\Redis-x64-5.0.14.1\redis-server.exe redis.windows.conf`（工作目录为该 Redis 安装目录）。
+- 验证：`redis-cli -h 127.0.0.1 -p 6379 ping` → `PONG`；`info server` → `redis_version:5.0.14.1`，`tcp_port:6379`。
+- **版本偏差记录**：实际版本为 5.0.14.1，与需求文档中声明的 Redis 7 不一致；系统仅使用 5.0 已支持的命令（String/JSON 缓存、`SET NX EX` 锁、带 TTL 的黑名单键），功能不受影响。该偏差将在 README 与最终交付报告中如实说明。
+
+### 8.4 首次提交与双远程同步
+
+| 项 | 结果 |
+| --- | --- |
+| 提交哈希 | `38772a30c60e9e056dd63586b6fe3a4d110bed4f` |
+| 提交信息 | `docs(project): add development plan, technical design and git workflow` |
+| 提交分支 | `main`（root-commit，4 个文件 / 1523 行新增） |
+| Gitee 推送 | 成功：`* [new branch] main -> main` |
+| GitHub 推送 | 成功：`* [new branch] main -> main`（经本地代理 `127.0.0.1:7897`） |
+| 一致性验证 | 本地 / `gitee/main` / `github/main` 三者均指向 `38772a30c60e9e056dd63586b6fe3a4d110bed4f` |
+| 推送前检查 | 已确认两个远程均为空仓库，无新提交、无覆盖风险 |
+
+### 8.5 遗留事项
+
+- 全局 `JAVA_HOME` 与 PATH 未做任何修改；后续所有 Maven 命令均需在 JDK 17 环境下执行，Stage 1 通过 Maven Wrapper 与项目配置固化该要求。
+- Redis 当前以手动启动的前台进程方式运行，机器重启后需重新启动；将在 README 中说明启动方式，并评估注册为 Windows 服务（需用户确认后再操作）。
+- 首次推送时 Git 凭据由系统凭据助手（`credential.helper=manager`）提供，未在仓库或日志中留下任何凭据内容。

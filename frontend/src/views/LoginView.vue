@@ -106,7 +106,10 @@ async function submit() {
           </el-button>
         </el-form>
 
-        <el-divider v-if="demoEnabled">本地开发演示账号（密码 Serviceflow@2026）</el-divider>
+        <div v-if="demoEnabled" class="login-card__demo-title">
+          <span>演示账号</span>
+          <span class="login-card__demo-password">密码 Serviceflow@2026</span>
+        </div>
         <div v-if="demoEnabled" class="login-card__demo">
           <el-button v-for="account in demoAccounts" :key="account.username" size="small"
                      @click="useDemoAccount(account)">
@@ -212,6 +215,30 @@ async function submit() {
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
+}
+
+.login-card__demo-title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 18px 0 10px;
+  font-size: 12px;
+  color: var(--sf-text-secondary);
+  white-space: nowrap;
+}
+
+.login-card__demo-title::before,
+.login-card__demo-title::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--sf-border-color);
+}
+
+.login-card__demo-password {
+  color: var(--sf-text-primary);
+  font-weight: 500;
+  font-family: Consolas, Monaco, monospace;
 }
 
 @media (max-width: 860px) {

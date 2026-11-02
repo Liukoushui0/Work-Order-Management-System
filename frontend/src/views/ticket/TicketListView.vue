@@ -112,16 +112,16 @@ onMounted(load)
       </template>
 
       <el-table v-loading="loading" :data="records" stripe>
-        <el-table-column prop="ticketNo" label="工单编号" width="170" />
-        <el-table-column prop="title" label="标题" min-width="180" show-overflow-tooltip />
-        <el-table-column prop="customerName" label="客户" min-width="150" show-overflow-tooltip />
-        <el-table-column prop="deviceName" label="设备" min-width="140" show-overflow-tooltip />
-        <el-table-column label="优先级" width="90">
+        <el-table-column prop="ticketNo" label="工单编号" width="160" />
+        <el-table-column prop="title" label="标题" min-width="120" show-overflow-tooltip />
+        <el-table-column prop="customerName" label="客户" min-width="125" show-overflow-tooltip />
+        <el-table-column prop="deviceName" label="设备" min-width="115" show-overflow-tooltip />
+        <el-table-column label="优先级" width="80">
           <template #default="{ row }">
             <StatusTag kind="priority" :value="row.priority" />
           </template>
         </el-table-column>
-        <el-table-column label="状态" width="100">
+        <el-table-column label="状态" width="90">
           <template #default="{ row }">
             <StatusTag :value="row.status" />
           </template>
@@ -129,19 +129,21 @@ onMounted(load)
         <el-table-column prop="assigneeName" label="负责人" width="120">
           <template #default="{ row }">{{ row.assigneeName || '未分派' }}</template>
         </el-table-column>
-        <el-table-column label="截止时间" width="180">
+        <el-table-column label="截止时间" width="170">
           <template #default="{ row }">
-            <span>{{ formatDateTime(row.deadlineTime) }}</span>
-            <el-tag v-if="row.overdue" type="danger" size="small" effect="dark" class="overdue-tag">逾期</el-tag>
+            <div class="deadline-cell">
+              <span>{{ formatDateTime(row.deadlineTime) }}</span>
+              <el-tag v-if="row.overdue" type="danger" size="small" effect="dark">逾期</el-tag>
+            </div>
           </template>
         </el-table-column>
-        <el-table-column label="评价" width="90">
+        <el-table-column label="评价" width="75">
           <template #default="{ row }">
             <el-tag v-if="row.evaluationScore" type="success" size="small">{{ row.evaluationScore }} 分</el-tag>
             <span v-else class="muted">未评价</span>
           </template>
         </el-table-column>
-        <el-table-column label="操作" width="90" fixed="right">
+        <el-table-column label="操作" width="70" fixed="right">
           <template #default="{ row }">
             <el-button link type="primary" @click="openDetail(row)">详情</el-button>
           </template>
@@ -183,8 +185,11 @@ onMounted(load)
   justify-content: space-between;
 }
 
-.overdue-tag {
-  margin-left: 6px;
+.deadline-cell {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
 }
 
 .muted {

@@ -196,25 +196,24 @@ onMounted(load)
       </template>
 
       <el-table v-loading="loading" :data="records" stripe>
-        <el-table-column prop="customerCode" label="客户编号" width="130" />
-        <el-table-column prop="customerName" label="客户名称" min-width="170" show-overflow-tooltip />
-        <el-table-column prop="contactName" label="联系人" width="110" />
-        <el-table-column prop="contactPhone" label="联系电话" width="130" />
-        <el-table-column prop="level" label="等级" width="80" />
-        <el-table-column prop="city" label="城市" width="110" />
-        <el-table-column prop="deviceCount" label="设备数" width="90" />
-        <el-table-column prop="ticketCount" label="工单数" width="90" />
-        <el-table-column label="状态" width="90">
+        <el-table-column prop="customerCode" label="客户编号" width="120" />
+        <el-table-column prop="customerName" label="客户名称" min-width="150" show-overflow-tooltip />
+        <el-table-column prop="contactName" label="联系人" width="100" />
+        <el-table-column prop="contactPhone" label="联系电话" width="125" />
+        <el-table-column prop="level" label="等级" width="65" />
+        <el-table-column prop="deviceCount" label="设备数" width="80" />
+        <el-table-column prop="ticketCount" label="工单数" width="80" />
+        <el-table-column label="状态" width="80">
           <template #default="{ row }">
             <el-tag :type="row.status === 1 ? 'success' : 'info'" size="small">
               {{ row.status === 1 ? '正常' : '停用' }}
             </el-tag>
           </template>
         </el-table-column>
-        <el-table-column label="创建时间" width="170">
+        <el-table-column label="创建时间" width="160">
           <template #default="{ row }">{{ formatDateTime(row.createTime) }}</template>
         </el-table-column>
-        <el-table-column v-if="canManage()" label="操作" width="190" fixed="right">
+        <el-table-column v-if="canManage()" label="操作" width="170" fixed="right">
           <template #default="{ row }">
             <el-button link type="primary" @click="openEdit(row)">编辑</el-button>
             <el-button link type="warning" @click="toggleStatus(row)">
